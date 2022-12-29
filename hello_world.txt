@@ -1,3 +1,0 @@
-hello world
-add line in rescaling recycling branch
-test-conflict added line
