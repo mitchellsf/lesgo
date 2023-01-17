@@ -20,6 +20,10 @@ FILE(REMOVE
   "EMUL_COMPLEX.mod"
   "CMakeFiles/lesgo-mpi.dir/emul_complex.mod.stamp"
 
+  "eqwm_smooth.mod"
+  "EQWM_SMOOTH.mod"
+  "CMakeFiles/lesgo-mpi.dir/eqwm_smooth.mod.stamp"
+
   "fft.mod"
   "FFT.mod"
   "CMakeFiles/lesgo-mpi.dir/fft.mod.stamp"
@@ -75,6 +79,10 @@ FILE(REMOVE
   "pid_m.mod"
   "PID_M.mod"
   "CMakeFiles/lesgo-mpi.dir/pid_m.mod.stamp"
+
+  "rescale_recycle.mod"
+  "RESCALE_RECYCLE.mod"
+  "CMakeFiles/lesgo-mpi.dir/rescale_recycle.mod.stamp"
 
   "sgs_param.mod"
   "SGS_PARAM.mod"

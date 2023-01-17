@@ -453,6 +453,8 @@ do
                 Read (buff(equal_pos+1:), *) lbc_mom
             case ('UBC_MOM')
                 Read (buff(equal_pos+1:), *) ubc_mom
+            case ('WMPT')
+                Read (buff(equal_pos+1:), *) wmpt
             case ('UBOT')
                 Read (buff(equal_pos+1:), *) ubot
             case ('UTOP')

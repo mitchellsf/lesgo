@@ -122,6 +122,10 @@ else if (lbc_mom==1) then
     if (coord == 0) write(*,*) '--> Creating initial laminar profile ',&
         'field with DNS BCs'
     call ic_dns()
+else if (inflow_type == 5) then
+    if (coord == 0) write(*,*) '--> Creating initial developing boundary layer ',&
+        'velocity field'
+    call ic_developing_bl()
 else
     if (coord == 0) write(*,*) '--> Creating initial boundary layer velocity ',&
     'field with LES BCs'
@@ -619,5 +623,131 @@ end if
 #endif
 
 end subroutine ic_les
+
+!*******************************************************************************
+subroutine ic_developing_bl()
+!*******************************************************************************
+! This subroutine produces an initial condition for the devloping boundary layer.
+! All quantities are normalized with the inlet momentum thickness theta0 = 1m 
+! and the inlet free stream velocity Uinfty0 = 1m/s. The molecular viscosity
+! then sets Re_theta0 via Re_theta0 = (1m^2/s)/nu_molec. The initial velocity
+! profile is the law of the wall plus random noise inside the boundary layer.
+
+use types,only:rprec
+use param
+use sim_param, only : u, v, w
+use rescale_recycle, only : compute_momentum_thickness
+
+implicit none
+integer :: jz, iter
+real(rprec) :: delta0, theta0, theta0_eps, utau0, utau0_eps
+real(rprec) :: tol, eps
+real(rprec), dimension(nz) :: ubar, ubar_eps
+real(rprec) :: rms, sigma_rv, z
+
+tol = 0.000001_rprec
+eps = 0.001_rprec
+
+delta0 = 10._rprec
+call get_velocity_profile(delta0,utau0,ubar)
+call compute_momentum_thickness(ubar,theta0)
+iter = 1
+do while (abs(theta0-1._rprec) .gt. tol .and. iter .lt. 1000)
+    call get_velocity_profile(delta0+eps,utau0_eps,ubar_eps)
+    call compute_momentum_thickness(ubar_eps,theta0_eps)
+    if (coord==0) then
+        write(*,*) 'iter: ',iter,', delta0: ',delta0,', theta0: ',theta0,&
+        ', theta0_eps: ',theta0_eps
+    endif
+    delta0 = delta0 - (theta0-1._rprec)/(theta0_eps-theta0)*eps
+    call get_velocity_profile(delta0,utau0,ubar)
+    call compute_momentum_thickness(ubar,theta0)
+    iter = iter + 1
+enddo
+
+!do jz = 1, nz
+!    u(:,:,jz) = ubar(jz)
+!enddo
+!v(:,:,:) = 0._rprec
+!w(:,:,:) = 0._rprec
+
+rms = 3._rprec
+sigma_rv = 0.289_rprec
+
+! Fill u, v, and w with uniformly distributed random numbers between 0 and 1
+call init_random_seed
+call random_number(u)
+call random_number(v)
+call random_number(w)
+
+! Center random number about 0 and rescale
+u = rms / sigma_rv * (u - 0.5_rprec)*utau0
+v = rms / sigma_rv * (v - 0.5_rprec)*utau0
+w = rms / sigma_rv * (w - 0.5_rprec)*utau0
+
+! Rescale noise depending on distance from wall and mean log profile
+! z is in meters
+do jz = 1, nz
+    z = (coord*(nz-1) + jz - 0.5_rprec) * dz
+    if (z <= delta0) then
+        u(:,:,jz) = u(:,:,jz) * (1._rprec-z / delta0) + ubar(jz)
+        v(:,:,jz) = v(:,:,jz) * (1._rprec-z / delta0)
+        w(:,:,jz) = w(:,:,jz) * (1._rprec-z / delta0)
+    else
+        u(:,:,jz) = ubar(jz)
+        v(:,:,jz) = 0._rprec
+        w(:,:,jz) = 0._rprec
+    end if
+end do
+
+! Bottom boundary conditions
+if (coord == 0) then
+    w(:, :, 1) = 0._rprec
+#ifdef PPMPI
+    u(:, :, 0) = 0._rprec
+    v(:, :, 0) = 0._rprec
+    w(:, :, 0) = 0._rprec
+#endif
+end if
+
+! Set upper boundary condition as zero for u, v, and w
+#ifdef PPMPI
+if (coord == nproc-1) then
+#endif
+    w(1:nx, 1:ny, nz) = 0._rprec
+    u(1:nx, 1:ny, nz) = 0._rprec
+    v(1:nx, 1:ny, nz) = 0._rprec
+#ifdef PPMPI
+end if
+#endif
+
+end subroutine ic_developing_bl
+
+!*******************************************************************************
+subroutine get_velocity_profile(delta0,utau0,ubar)
+!*******************************************************************************
+use param
+use functions, only : velocity_fit, retd_fit
+
+implicit none
+integer :: jz
+real(rprec), intent(in) :: delta0
+real(rprec), intent(out) :: utau0
+real(rprec), dimension(nz), intent(out) :: ubar
+real(rprec) :: z, fu, retd0
+
+retd0 = retd_fit(1._rprec*delta0/nu_molec)
+utau0 = nu_molec/delta0*retd0
+do jz = 1, nz
+    z = (coord*(nz-1) + jz - 0.5_rprec) * dz
+    if (z .gt. delta0) then
+        ubar(jz) = 1._rprec
+    else
+        fu = velocity_fit(z*utau0/nu_molec)
+        ubar(jz) = fu*utau0
+    endif
+enddo
+
+end subroutine get_velocity_profile
 
 end subroutine initial

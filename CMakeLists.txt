@@ -178,7 +178,7 @@ set (Sources cfl_util.f90 clocks.f90 convec.f90 coriolis.f90 derivatives.f90 div
      sgs_param.f90 sgs_stag_util.f90 sim_param.f90 sponge.f90 stat_defs.f90
      std_dynamic.f90 string_util.f90 test_filtermodule.f90 tridag_array.f90
      time_average.f90 types.f90 wallstress.f90 init_random_seed.f90
-     iwmles.f90)
+     iwmles.f90 eqwm_smooth.f90 rescale_recycle.f90)
 
 if (USE_MPI)
     add_definitions(-DPPMPI)
@@ -270,9 +270,10 @@ if (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
     #set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -cpp -O0 -g -traceback -no-wrap-margin -assume byterecl")
 # GNU
 else (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
-    set (CMAKE_Fortran_FLAGS "-cpp -O2 -funroll-loops -Wall")
+    #set (CMAKE_Fortran_FLAGS "-cpp -O2 -funroll-loops -Wall")
     #set (CMAKE_Fortran_FLAGS "-cpp -O2 -ffast-math -funroll-loops -fall-intrinsics -Wall -fcheck=all")
-    #set (CMAKE_Fortran_FLAGS "-cpp -O0 -g -fbacktrace -fall-intrinsics -Wall -fcheck=all")
+    set (CMAKE_Fortran_FLAGS "-cpp -O0 -g -traceback -fall-intrinsics -Wall -fcheck=all")
+
 endif (CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
 
 # main lesgo executable

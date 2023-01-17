@@ -40,6 +40,9 @@ default_target: all
 .SUFFIXES: .hpux_make_needs_suffix_list
 
 
+# Produce verbose output by default.
+VERBOSE = 1
+
 # Command-line flag to silence nested $(MAKE).
 $(VERBOSE)MAKESILENT = -s
 
@@ -357,6 +360,33 @@ emul_complex.s: emul_complex.f90.s
 emul_complex.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/emul_complex.f90.s
 .PHONY : emul_complex.f90.s
+
+eqwm_smooth.o: eqwm_smooth.f90.o
+
+.PHONY : eqwm_smooth.o
+
+# target to build an object file
+eqwm_smooth.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o
+.PHONY : eqwm_smooth.f90.o
+
+eqwm_smooth.i: eqwm_smooth.f90.i
+
+.PHONY : eqwm_smooth.i
+
+# target to preprocess a source file
+eqwm_smooth.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.i
+.PHONY : eqwm_smooth.f90.i
+
+eqwm_smooth.s: eqwm_smooth.f90.s
+
+.PHONY : eqwm_smooth.s
+
+# target to generate assembly for a file
+eqwm_smooth.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.s
+.PHONY : eqwm_smooth.f90.s
 
 fft.o: fft.f90.o
 
@@ -1033,6 +1063,33 @@ press_stag_array.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/press_stag_array.f90.s
 .PHONY : press_stag_array.f90.s
 
+rescale_recycle.o: rescale_recycle.f90.o
+
+.PHONY : rescale_recycle.o
+
+# target to build an object file
+rescale_recycle.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o
+.PHONY : rescale_recycle.f90.o
+
+rescale_recycle.i: rescale_recycle.f90.i
+
+.PHONY : rescale_recycle.i
+
+# target to preprocess a source file
+rescale_recycle.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.i
+.PHONY : rescale_recycle.f90.i
+
+rescale_recycle.s: rescale_recycle.f90.s
+
+.PHONY : rescale_recycle.s
+
+# target to generate assembly for a file
+rescale_recycle.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi.dir/build.make CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.s
+.PHONY : rescale_recycle.f90.s
+
 rmsdiv.o: rmsdiv.f90.o
 
 .PHONY : rmsdiv.o
@@ -1471,6 +1528,9 @@ help:
 	@echo "... emul_complex.o"
 	@echo "... emul_complex.i"
 	@echo "... emul_complex.s"
+	@echo "... eqwm_smooth.o"
+	@echo "... eqwm_smooth.i"
+	@echo "... eqwm_smooth.s"
 	@echo "... fft.o"
 	@echo "... fft.i"
 	@echo "... fft.s"
@@ -1546,6 +1606,9 @@ help:
 	@echo "... press_stag_array.o"
 	@echo "... press_stag_array.i"
 	@echo "... press_stag_array.s"
+	@echo "... rescale_recycle.o"
+	@echo "... rescale_recycle.i"
+	@echo "... rescale_recycle.s"
 	@echo "... rmsdiv.o"
 	@echo "... rmsdiv.i"
 	@echo "... rmsdiv.s"

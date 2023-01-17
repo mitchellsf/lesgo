@@ -29,7 +29,8 @@ private
 
 public interp_to_uv_grid, trilinear_interp, trilinear_interp_w, binary_search, &
     bilinear_interp, linear_interp, cross_product, cell_indx, buff_indx,       &
-    interp_to_w_grid, get_tau_wall_bot, get_tau_wall_top, count_lines
+    interp_to_w_grid, get_tau_wall_bot, get_tau_wall_top, count_lines, &
+    velocity_fit, retd_fit
 
 character (*), parameter :: mod_name = 'functions'
 
@@ -968,5 +969,45 @@ end do
 close(fid)
 
 end function count_lines
+
+!*******************************************************************************
+function velocity_fit(Deltap) result(fu)
+!*******************************************************************************
+use param, only : nx, ny
+
+implicit none
+real(rprec) :: kappa,B,k2,k1,beta
+real(rprec), intent(in) :: Deltap
+real(rprec) :: fu
+
+kappa = 0.4_rprec
+B = 4.95_rprec
+k2 = 9.753_rprec
+k1 = 1._rprec/kappa*log(k2) + B
+beta = 1.903_rprec
+fu = (1._rprec/kappa*log(k2+Deltap)+B)* &
+    (1._rprec + ((k1**-1._rprec)*Deltap)**-beta)**(-1._rprec/beta)
+
+end function velocity_fit
+
+!*******************************************************************************
+function retd_fit(redelta) result(retd)
+!*******************************************************************************
+use param, only : nx, ny
+
+implicit none
+real(rprec), intent(in) :: redelta
+real(rprec) :: retd
+real(rprec) :: kappa3, kappa4, beta1, beta2
+
+kappa3 = 0.005_rprec
+beta1 = (1._rprec + 0.155_rprec*redelta**-0.03_rprec)**-1
+beta2 = 1.7 - (1._rprec + 36._rprec*redelta**-0.75_rprec)**-1
+kappa4 = kappa3**(beta1 - 0.5_rprec)
+
+retd = kappa4*redelta**beta1*                            &
+    (1._rprec + (kappa3*redelta)**-beta2)**((beta1-0.5_rprec)/beta2)
+
+end function retd_fit
 
 end module functions

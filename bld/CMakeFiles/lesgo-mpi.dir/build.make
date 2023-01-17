@@ -35,6 +35,9 @@
 .SUFFIXES: .hpux_make_needs_suffix_list
 
 
+# Produce verbose output by default.
+VERBOSE = 1
+
 # Command-line flag to silence nested $(MAKE).
 $(VERBOSE)MAKESILENT = -s
 
@@ -674,9 +677,35 @@ CMakeFiles/lesgo-mpi.dir/iwmles.f90.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/lesgo-mpi.dir/iwmles.f90.s"
 	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S /home/mfowle12/code/lesgo_mitchell/lesgo/iwmles.f90 -o CMakeFiles/lesgo-mpi.dir/iwmles.f90.s
 
+CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi.dir/flags.make
+CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o: ../eqwm_smooth.f90
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building Fortran object CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c /home/mfowle12/code/lesgo_mitchell/lesgo/eqwm_smooth.f90 -o CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o
+
+CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.i"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E /home/mfowle12/code/lesgo_mitchell/lesgo/eqwm_smooth.f90 > CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.i
+
+CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.s"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S /home/mfowle12/code/lesgo_mitchell/lesgo/eqwm_smooth.f90 -o CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.s
+
+CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o: CMakeFiles/lesgo-mpi.dir/flags.make
+CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o: ../rescale_recycle.f90
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Building Fortran object CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c /home/mfowle12/code/lesgo_mitchell/lesgo/rescale_recycle.f90 -o CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o
+
+CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.i"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E /home/mfowle12/code/lesgo_mitchell/lesgo/rescale_recycle.f90 > CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.i
+
+CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.s"
+	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S /home/mfowle12/code/lesgo_mitchell/lesgo/rescale_recycle.f90 -o CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.s
+
 CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o: CMakeFiles/lesgo-mpi.dir/flags.make
 CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o: ../mpi_transpose_mod.f90
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building Fortran object CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_49) "Building Fortran object CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o"
 	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c /home/mfowle12/code/lesgo_mitchell/lesgo/mpi_transpose_mod.f90 -o CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o
 
 CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.i: cmake_force
@@ -689,7 +718,7 @@ CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.s: cmake_force
 
 CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o: CMakeFiles/lesgo-mpi.dir/flags.make
 CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o: ../mpi_defs.f90
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_48) "Building Fortran object CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_50) "Building Fortran object CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o"
 	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c /home/mfowle12/code/lesgo_mitchell/lesgo/mpi_defs.f90 -o CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o
 
 CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.i: cmake_force
@@ -748,6 +777,8 @@ lesgo__mpi_OBJECTS = \
 "CMakeFiles/lesgo-mpi.dir/wallstress.f90.o" \
 "CMakeFiles/lesgo-mpi.dir/init_random_seed.f90.o" \
 "CMakeFiles/lesgo-mpi.dir/iwmles.f90.o" \
+"CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o" \
+"CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o" \
 "CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o" \
 "CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o"
 
@@ -800,11 +831,13 @@ lesgo-mpi: CMakeFiles/lesgo-mpi.dir/types.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/wallstress.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/init_random_seed.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/iwmles.f90.o
+lesgo-mpi: CMakeFiles/lesgo-mpi.dir/eqwm_smooth.f90.o
+lesgo-mpi: CMakeFiles/lesgo-mpi.dir/rescale_recycle.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/mpi_transpose_mod.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/mpi_defs.f90.o
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/build.make
 lesgo-mpi: CMakeFiles/lesgo-mpi.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_49) "Linking Fortran executable lesgo-mpi"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_51) "Linking Fortran executable lesgo-mpi"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/lesgo-mpi.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

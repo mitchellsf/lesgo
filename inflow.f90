@@ -30,6 +30,7 @@ use concurrent_precursor, only : synchronize_cps, inflow_cps
 use hit_inflow
 #endif
 use shifted_inflow
+use rescale_recycle
 implicit none
 
 private
@@ -61,6 +62,9 @@ select case (inflow_type)
     case (4)
         call inflow_cps()
 #endif
+    ! rescale-recycle
+    case (5)
+        call rescale_recycle_init()
 end select
 
 end subroutine inflow_init
@@ -90,6 +94,9 @@ select case (inflow_type)
     case (4)
         call inflow_cps()
 #endif
+    ! rescale-recycle
+    case (5)
+        call rescale_recycle_calc()
 end select
 
 end subroutine apply_inflow

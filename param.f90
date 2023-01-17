@@ -178,6 +178,10 @@ logical :: inilag = .true.
 integer :: lbc_mom = 1
 integer :: ubc_mom = 0
 
+! Point number away from the wall the wall model uses
+! (only used for equilibrium smooth wall model)
+integer :: wmpt = 1
+
 ! Prescribe bottom and top wall streamwise velocity
 ! Only for DNS (sgs=.false.) and full channel (lbc_mom = ubc_mom = 1)
 real(rprec) :: ubot = 0.0_rprec   ! nondimensional

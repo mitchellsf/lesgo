@@ -5,6 +5,7 @@ provides
  coriolis.mod
  derivatives.mod
  emul_complex.mod
+ eqwm_smooth.mod
  fft.mod
  forcing.mod
  fringe.mod
@@ -19,6 +20,7 @@ provides
  mpi_transpose_mod.mod
  param.mod
  pid_m.mod
+ rescale_recycle.mod
  sgs_param.mod
  sgs_stag_util.mod
  shifted_inflow.mod
