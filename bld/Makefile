@@ -61,10 +61,10 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /data/apps/linux-centos8-cascadelake/intel-19.1.2.254/cmake-3.18.4-vnclgi4r3epzyihf2bqezuvvvcpcgz5f/bin/cmake
+CMAKE_COMMAND = /data/apps/linux-centos8-cascadelake/gcc-9.3.0/cmake-3.18.4-c3et6wwnwsodt42d2nb42qeoe4lnuvle/bin/cmake
 
 # The command to remove a file.
-RM = /data/apps/linux-centos8-cascadelake/intel-19.1.2.254/cmake-3.18.4-vnclgi4r3epzyihf2bqezuvvvcpcgz5f/bin/cmake -E rm -f
+RM = /data/apps/linux-centos8-cascadelake/gcc-9.3.0/cmake-3.18.4-c3et6wwnwsodt42d2nb42qeoe4lnuvle/bin/cmake -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
@@ -81,7 +81,7 @@ CMAKE_BINARY_DIR = /home/mfowle12/code/lesgo_mitchell/lesgo/bld
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/cmake-3.18.4-vnclgi4r3epzyihf2bqezuvvvcpcgz5f/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/data/apps/linux-centos8-cascadelake/gcc-9.3.0/cmake-3.18.4-c3et6wwnwsodt42d2nb42qeoe4lnuvle/bin/cmake --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache

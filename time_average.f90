@@ -110,17 +110,6 @@ allocate( this%vortx(nx,ny,lbz:nz) ); this%vortx(:,:,:) = 0._rprec
 allocate( this%vorty(nx,ny,lbz:nz) ); this%vorty(:,:,:) = 0._rprec
 allocate( this%vortz(nx,ny,lbz:nz) ); this%vortz(:,:,:) = 0._rprec
 
-!open(unit=13, file=path // 'output/tau_avg.c0.bin', form='unformatted', convert=read_endian,        &
-!    access='direct', recl=nx*ny*nz*rprec)
-!read(13,rec=1) this%txx
-!read(13,rec=2) this%txy
-!read(13,rec=3) this%tyy
-!read(13,rec=4) this%txz
-!read(13,rec=5) this%tyz
-!read(13,rec=6) this%tzz
-!close(13)
-!write(*,*) 'coord: ',coord,', initial txz: ',sum(sum(this%txz,1),1)/nx/ny
-
 fname = ftavg_in
 #ifdef PPMPI
 call string_concat(fname, MPI_suffix, coord)
@@ -327,11 +316,6 @@ this%total_time = this%total_time + this%dt
 ! Set this%dt back to zero for next increment
 this%dt = 0._rprec
 
-if (coord==0) then
-    write(*,*) sum(sum(this%txz,1),1)/nx/ny/this%total_time
-endif
-
-
 end subroutine compute
 
 !*******************************************************************************
@@ -481,19 +465,6 @@ call mpi_sync_real_array( this%cs_opt2(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
 call mpi_sync_real_array( this%vortx(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
 call mpi_sync_real_array( this%vorty(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
 call mpi_sync_real_array( this%vortz(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%txx(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%tyy(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%tzz(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%txy(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%txz(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%tyz(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%p(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%fx(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%fy(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%fz(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%u_w(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%v_w(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
-call mpi_sync_real_array( this%w_uv(1:nx,1:ny,lbz:nz), 0, MPI_SYNC_DOWNUP )
 #endif
 
 ! Write all the 3D data
@@ -575,63 +546,61 @@ call write_parallel_cgns(fname_vort,nx,ny,nz- nz_end,nz_tot,                   &
 ! Write binary data
 open(unit=13, file=fname_vel, form='unformatted', convert=write_endian,        &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%u(1:nx,1:ny,1:nz)
-write(13,rec=2) this%v(1:nx,1:ny,1:nz)
-write(13,rec=3) this%w_uv(1:nx,1:ny,1:nz)
+write(13,rec=1) this%u(:nx,:ny,1:nz)
+write(13,rec=2) this%v(:nx,:ny,1:nz)
+write(13,rec=3) this%w_uv(:nx,:ny,1:nz)
 close(13)
 
 ! Write binary data
 open(unit=13, file=fname_velw, form='unformatted', convert=write_endian,       &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%w(1:nx,1:ny,1:nz)
+write(13,rec=1) this%w(:nx,:ny,1:nz)
 close(13)
 
 open(unit=13, file=fname_vel2, form='unformatted', convert=write_endian,       &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%u2(1:nx,1:ny,1:nz)
-write(13,rec=2) this%v2(1:nx,1:ny,1:nz)
-write(13,rec=3) this%w2(1:nx,1:ny,1:nz)
-write(13,rec=4) this%uw(1:nx,1:ny,1:nz)
-write(13,rec=5) this%vw(1:nx,1:ny,1:nz)
-write(13,rec=6) this%uv(1:nx,1:ny,1:nz)
+write(13,rec=1) this%u2(:nx,:ny,1:nz)
+write(13,rec=2) this%v2(:nx,:ny,1:nz)
+write(13,rec=3) this%w2(:nx,:ny,1:nz)
+write(13,rec=4) this%uw(:nx,:ny,1:nz)
+write(13,rec=5) this%vw(:nx,:ny,1:nz)
+write(13,rec=6) this%uv(:nx,:ny,1:nz)
 close(13)
 
 open(unit=13, file=fname_tau, form='unformatted', convert=write_endian,        &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%txx(1:nx,1:ny,1:nz)
-write(13,rec=2) this%txy(1:nx,1:ny,1:nz)
-write(13,rec=3) this%tyy(1:nx,1:ny,1:nz)
-write(13,rec=4) this%txz(1:nx,1:ny,1:nz)
-write(13,rec=5) this%tyz(1:nx,1:ny,1:nz)
-write(13,rec=6) this%tzz(1:nx,1:ny,1:nz)
+write(13,rec=1) this%txx(:nx,:ny,1:nz)
+write(13,rec=2) this%txy(:nx,:ny,1:nz)
+write(13,rec=3) this%tyy(:nx,:ny,1:nz)
+write(13,rec=4) this%txz(:nx,:ny,1:nz)
+write(13,rec=5) this%tyz(:nx,:ny,1:nz)
+write(13,rec=6) this%tzz(:nx,:ny,1:nz)
 close(13)
-
-write(*,*) 'coord: ',coord,', txz: ',sum(sum(this%txz(:,:,1:nz),1),1)/nx/ny
 
 open(unit=13, file=fname_pres, form='unformatted', convert=write_endian,       &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%p(1:nx,1:ny,1:nz)
+write(13,rec=1) this%p(:nx,:ny,1:nz)
 close(13)
 
 #if defined(PPTURBINES) || defined(PPATM) || defined(PPLVLSET)
 open(unit=13, file=fname_f, form='unformatted', convert=write_endian,          &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%fx(1:nx,1:ny,1:nz)
-write(13,rec=2) this%fy(1:nx,1:ny,1:nz)
-write(13,rec=3) this%fz(1:nx,1:ny,1:nz)
+write(13,rec=1) this%fx(:nx,:ny,1:nz)
+write(13,rec=2) this%fy(:nx,:ny,1:nz)
+write(13,rec=3) this%fz(:nx,:ny,1:nz)
 close(13)
 #endif
 
 open(unit=13, file=fname_cs, form='unformatted', convert=write_endian,         &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%cs_opt2(1:nx,1:ny,1:nz)
+write(13,rec=1) this%cs_opt2(:nx,:ny,1:nz)
 close(13)
 
 open(unit=13, file=fname_vort, form='unformatted', convert=write_endian,       &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) this%vortx(1:nx,1:ny,1:nz)
-write(13,rec=2) this%vorty(1:nx,1:ny,1:nz)
-write(13,rec=3) this%vortz(1:nx,1:ny,1:nz)
+write(13,rec=1) this%vortx(:nx,:ny,1:nz)
+write(13,rec=2) this%vorty(:nx,:ny,1:nz)
+write(13,rec=3) this%vortz(:nx,:ny,1:nz)
 close(13)
 
 #endif

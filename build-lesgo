@@ -1,4 +1,5 @@
 #!/bin/sh
+ml cmake
 cmake . -Bbld
 cmake --build bld
 cp bld/lesgo* .
