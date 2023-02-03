@@ -55,7 +55,7 @@ set(CMAKE_DEPENDS_CHECK_Fortran
   "/home/mfowle12/code/lesgo_mitchell/lesgo/types.f90" "/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles/lesgo-mpi.dir/types.f90.o"
   "/home/mfowle12/code/lesgo_mitchell/lesgo/wallstress.f90" "/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles/lesgo-mpi.dir/wallstress.f90.o"
   )
-set(CMAKE_Fortran_COMPILER_ID "GNU")
+set(CMAKE_Fortran_COMPILER_ID "Intel")
 set(CMAKE_Fortran_SUBMODULE_SEP "@")
 set(CMAKE_Fortran_SUBMODULE_EXT ".smod")
 
@@ -68,7 +68,7 @@ set(CMAKE_TARGET_DEFINITIONS_Fortran
 set(CMAKE_Fortran_TARGET_INCLUDE_PATH
   "/usr/local/include"
   "/usr/include"
-  "/data/apps/linux-centos8-cascadelake/gcc-9.3.0/fftw-3.3.8-uxkh4w5nrgeviv2ooaorhcuolbtbosyi/include"
+  "/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/include"
   )
 
 # Targets to which this target links.

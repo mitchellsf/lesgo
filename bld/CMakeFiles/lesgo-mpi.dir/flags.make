@@ -4,7 +4,7 @@
 # compile Fortran with mpif90
 Fortran_DEFINES = -DPPMPI
 
-Fortran_INCLUDES = -I/usr/local/include -I/usr/include -I/data/apps/linux-centos8-cascadelake/gcc-9.3.0/fftw-3.3.8-uxkh4w5nrgeviv2ooaorhcuolbtbosyi/include
+Fortran_INCLUDES = -I/usr/local/include -I/usr/include -I/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/include
 
-Fortran_FLAGS = -cpp -O2 -ffast-math -funroll-loops -fall-intrinsics -Wall -fcheck=all
+Fortran_FLAGS =  -cpp -O3 -funroll-loops -no-wrap-margin -assume byterecl
 

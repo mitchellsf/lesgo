@@ -28,7 +28,7 @@ implicit none
 private
 public rescale_recycle_init, rescale_recycle_calc, compute_momentum_thickness
 
-integer :: isample
+integer :: isample, iter
 
 ! velocity decomposition
 type velocity_t
@@ -41,6 +41,7 @@ end type velocity_t
 type sample_inlet_t
     type(velocity_t) :: u, v, w
     real(rprec) :: delta, theta, utau, uinf
+    character*50 :: loc_name
 end type sample_inlet_t
 
 real(rprec), dimension(:), allocatable :: z_uv, z_w
@@ -61,6 +62,8 @@ apply_fringe = fringe_t(fringe_region_end, fringe_region_len)
 call sample_inlet_init(inlt)
 call sample_inlet_init(samp)
 isample = modulo(floor(sampling_region_end*nx + 1._rprec) - 1, nx) + 1
+samp%loc_name = 'sample'
+inlt%loc_name = 'inlet'
 
 allocate(z_uv(nz_tot))
 allocate(z_w(nz_tot))
@@ -107,14 +110,14 @@ subroutine rescale_recycle_calc
 use param
 use sim_param, only : u, v, w, txz
 
-integer :: i, i_w, kstart, kend, jz, iter
+integer :: i, i_w, kstart, kend, jz
 real(rprec), dimension(ny,nz_tot) :: dummy1, dummy2, dummy3
 type(sample_inlet_t) :: inlt_eps
 real(rprec) :: tol, eps
 
 call sample_inlet_init(inlt_eps)
 tol = 0.000001_rprec
-eps = 0.001_rprec
+eps = 0.000001_rprec
 
 dummy1 = 0._rprec
 dummy2 = 0._rprec
@@ -140,6 +143,7 @@ call mpi_allreduce(dummy3,samp%w%tot,ny*nz_tot,MPI_RPREC,MPI_SUM, &
 samp%u%avg = sum(samp%u%tot,1)/ny
 samp%v%avg = sum(samp%v%tot,1)/ny
 samp%w%avg = sum(samp%w%tot,1)/ny
+samp%uinf = samp%u%avg(nz_tot-1)
 do jz = 1,nz_tot
     samp%u%fluc(:,jz) = samp%u%tot(:,jz) - samp%u%avg(jz)
     samp%v%fluc(:,jz) = samp%v%tot(:,jz) - samp%v%avg(jz)
@@ -148,27 +152,31 @@ enddo
 samp%utau = sqrt(sum(sqrt(txz(isample,1:ny,1)**2.0+txz(isample,1:ny,1)**2.0))/ny)
 call mpi_bcast(samp%utau,1,MPI_RPREC,0,MPI_COMM_WORLD,ierr)
 call compute_momentum_thickness2(samp%u%avg,samp%theta)
-samp%uinf = samp%u%avg(nz_tot-1)
+call compute_bl_thickness(samp%u%avg,samp%delta)
 
 ! Inlet plane computation (sampling plane rescaled)
 !call rescale_velocity(samp,inlt)
 call iterate_utau(samp,inlt)
 iter = 1
-do while (abs(inlt%theta-1._rprec) .gt. tol .and. iter .lt. 1000)
-!    if (coord==0) then
-!        write(*,*) jt_total, iter
-!         write(*,*) inlt%theta, inlt%delta, inlt%utau, inlt%uinf
-!    endif
+do while (abs(inlt%theta-1._rprec) .gt. tol .and. iter .lt. 100)
+    iter = iter + 1
     inlt_eps%delta = inlt%delta + eps
 !    call rescale_velocity(samp,inlt_eps)
     call iterate_utau(samp,inlt_eps)
     inlt%delta = inlt%delta - (inlt%theta-1._rprec)/(inlt_eps%theta-inlt%theta)*eps
 !    call rescale_velocity(samp,inlt)
+    if (inlt%delta < 0._rprec .or. inlt%delta > L_z) then
+        inlt%delta = 5._rprec
+    endif
     call iterate_utau(samp,inlt)
-    iter = iter + 1
 enddo
 
-if (coord==0 .and. mod(jt_total,100)==0) then
+if (coord==0 .and. mod(jt_total,1)==0) then
+    call monitor_velocity_rescale_recycle(samp)
+    call monitor_velocity_rescale_recycle(inlt)
+endif
+
+if (coord==0 .and. mod(jt_total,1)==0) then
     call monitor_rescale_recycle()
 endif
 
@@ -199,26 +207,17 @@ real(rprec), dimension(ny,nz_tot) :: up_inner, up_outer, vp_inner, vp_outer, &
 real(rprec) :: gg, a, b, weight_uv, weight_w
 integer :: jz
 
-!inl%utau = sam%utau*(sam%theta/1._rprec)**0.125_rprec
-!inl%utau = sam%utau*(sam%theta/inl%theta)**0.125_rprec
-!inl%utau = 0.9_rprec*sam%utau
 
 a = 4._rprec
 b = 0.2_rprec
 gg = inl%utau/sam%utau
-!if (coord==0) then
-!    write(*,*) 'sample ubar: ',sam%u%avg
-!    write(*,*) 'sample y+: ',z_uv*sam%utau/nu_molec
-!endif
 do jz = 1,nz_tot
     ubar_inner(jz) = gg*lin_interp1(sam%u%avg,z_uv*sam%utau/nu_molec,&
         z_uv(jz)*inl%utau/nu_molec)
-!    if (coord==0) then
-!        write(*,*) 'inlet y+: ',z_uv(jz)*inl%utau/nu_molec,&
-!            ', inlet ubar: ',ubar_inner(jz)/gg
-!    endif
     ubar_outer(jz) = gg*lin_interp1(sam%u%avg,z_uv/sam%delta,&
-        z_uv(jz)/inl%delta) + (1._rprec-gg)*(1._rprec)
+        z_uv(jz)/inl%delta) + (1._rprec-gg*sam%uinf)*(1._rprec)  
+!    ubar_outer(jz) = gg*lin_interp1(sam%u%avg,z_uv/sam%delta,&
+!        z_uv(jz)/inl%delta) + (1._rprec-gg)*(1._rprec)
     up_inner(:,jz) = gg*lin_interp2(sam%u%fluc,z_uv*sam%utau/nu_molec,&
         z_uv(jz)*inl%utau/nu_molec)
     vp_inner(:,jz) = gg*lin_interp2(sam%v%fluc,z_uv*sam%utau/nu_molec,&
@@ -233,9 +232,24 @@ do jz = 1,nz_tot
     weight_w = 0.5_rprec*(1.0+tanh( a*(z_w(jz)/inl%delta-b)/&
         ((1.0-2.0*b)*z_w(jz)/inl%delta+b) )/tanh(a))
     if (z_uv(jz)>inl%delta) then
-        ubar_outer(jz) = 1._rprec
-        ubar_inner(jz) = 1._rprec
+        weight_uv = 1._rprec
+        if (z_uv(jz)<2.0*inl%delta) then
+            up_outer(:,jz) = up_outer(:,jz)*cos((z_uv(jz)/inl%delta-1.0)*pi/2.0)
+            vp_outer(:,jz) = vp_outer(:,jz)*cos((z_uv(jz)/inl%delta-1.0)*pi/2.0)
+        else
+            up_outer(:,jz) = 0._rprec
+            vp_outer(:,jz) = 0._rprec
+        endif
     endif
+    if (z_w(jz)>inl%delta) then
+        weight_w = 1._rprec
+        if (z_w(jz)<2.0*inl%delta) then
+            wp_outer(:,jz) = wp_outer(:,jz)*cos((z_w(jz)/inl%delta-1.0)*pi/2.0)
+        else
+            wp_outer(:,jz) = 0._rprec
+        endif
+    endif
+
     inl%u%tot(:,jz) = (ubar_inner(jz)+up_inner(:,jz))*(1._rprec-weight_uv) +&
         (ubar_outer(jz)+up_outer(:,jz))*weight_uv
     inl%v%tot(:,jz) = (vp_inner(:,jz))*(1._rprec-weight_uv) +&
@@ -248,11 +262,7 @@ enddo
 inl%u%avg = sum(inl%u%tot,1)/ny
 inl%uinf = inl%u%avg(nz_tot-1)
 call compute_momentum_thickness2(inl%u%avg,inl%theta)
-inl%utau = retd_fit(inl%u%avg(1)*z_uv(1)/nu_molec)*nu_molec/z_uv(1)
-
-!if (coord==0) then
-!    write(*,*) ubar_inner(nz_tot-1),ubar_outer(nz_tot-1),inl%uinf
-!endif
+!inl%utau = retd_fit(inl%u%avg(1)*z_uv(1)/nu_molec)*nu_molec/z_uv(1)
 
 end subroutine rescale_velocity
 
@@ -265,18 +275,24 @@ real(rprec) :: tol, utau_before, utau_after
 type(sample_inlet_t), intent(inout) :: samp, inlt
 integer :: iter
 
-tol = 0.01_rprec
+!tol = 0.01_rprec
+!
+!utau_before = 1._rprec
+!utau_after = -1._rprec
+!iter = 1
+!do while (abs((utau_before-utau_after)/utau_after) .gt. tol .and. iter .lt. 1000)
+!    utau_before = inlt%utau
+!    call rescale_velocity(samp,inlt)
+!    utau_after = inlt%utau
+!    iter = iter + 1
+!enddo
 
-utau_before = 1._rprec
-utau_after = -1._rprec
-iter = 1
-do while (abs((utau_before-utau_after)/utau_after) .gt. tol .and. iter .lt. 1000)
-    utau_before = inlt%utau
-    call rescale_velocity(samp,inlt)
-    utau_after = inlt%utau
-    iter = iter + 1
-enddo
 
+inlt%utau = samp%utau*(samp%theta/1._rprec)**0.125_rprec
+!inlt%utau = samp%utau*(samp%theta/inlt%theta)**0.125_rprec
+!inlt%utau = 0.9_rprec*samp%utau
+
+call rescale_velocity(samp,inlt)
 
 end subroutine iterate_utau
 
@@ -304,24 +320,27 @@ use param, only : nz_tot
 use functions, only : binary_search
 
 implicit none
-real(rprec), dimension(nz_tot) :: phi
-real(rprec), dimension(nz_tot) :: grid
+real(rprec), dimension(:), intent(in) :: phi, grid
+real(rprec), intent(in) :: pt
 real(rprec) :: phi_i
-real(rprec) :: pt
-integer :: low
+integer :: low, nn
+
+nn = size(grid)
 
 ! find lower index for pt
 low = binary_search(grid,pt)
 
 !perform linear interpolation (or extrapolation if outside bounds of array)
 !note: nz_tot is out of domain bounds for uv grid
-if (low==0) then
-    low = 1
-elseif (low==nz_tot .or. low==nz_tot-1) then
-    low = nz_tot-2
+if (low>nn-2) then
+    phi_i = phi(nn-1)
+else
+    if (low==0) then
+        low = 1
+    endif
+    phi_i = phi(low) + (pt-grid(low))*&
+        (phi(low+1)-phi(low))/(grid(low+1)-grid(low))    
 endif
-phi_i = phi(low) + (pt-grid(low))*&
-    (phi(low+1)-phi(low))/(grid(low+1)-grid(low))
 
 end function lin_interp1
 
@@ -343,13 +362,15 @@ low = binary_search(grid,pt)
 
 !perform linear interpolation (or extrapolation if outside bounds of array)
 !note: nz_tot is out of domain bounds for uv grid
-if (low==0) then
-    low = 1
-elseif (low==nz_tot .or. low==nz_tot-1) then
-    low = nz_tot-2
+if (low>nz_tot-2) then
+    phi_i(:) = phi(:,nz_tot-1)
+else
+    if (low==0) then
+        low = 1
+    endif
+    phi_i(:) = phi(:,low) + (pt-grid(low))*&
+        (phi(:,low+1)-phi(:,low))/(grid(low+1)-grid(low))
 endif
-phi_i(:) = phi(:,low) + (pt-grid(low))*&
-    (phi(:,low+1)-phi(:,low))/(grid(low+1)-grid(low))
 
 end function lin_interp2
 
@@ -366,9 +387,9 @@ real(rprec), dimension(nz) :: dummy
 integer :: jz
 
 dummy = ubar*(1._rprec-ubar)
-theta_local = 0._rprec
+theta_local = 0.25_rprec*dummy(1)*dz
 do jz = 2, nz-1
-    theta_local = theta_local + 0.5_rprec*(dummy(jz)+dummy(jz-1))
+    theta_local = theta_local + 0.5_rprec*(dummy(jz)+dummy(jz-1))*dz
 enddo
 call mpi_allreduce(theta_local,theta,1,MPI_RPREC,MPI_SUM, &
      MPI_COMM_WORLD,ierr)
@@ -383,16 +404,41 @@ use param
 implicit none
 real(rprec), dimension(nz_tot), intent(in) :: ubar
 real(rprec), intent(out) :: theta
-real(rprec), dimension(nz_tot) :: dummy
+real(rprec), dimension(nz_tot) :: dummy, uinf
 integer :: jz
 
-dummy = ubar*(1._rprec-ubar)
-theta = 0._rprec
+uinf = ubar(nz_tot-1)
+dummy = ubar/uinf*(1._rprec-ubar/uinf)
+theta = 0.25_rprec*dummy(1)*dz
 do jz = 2, nz_tot-1
-    theta = theta + 0.5_rprec*(dummy(jz)+dummy(jz-1))
+    theta = theta + 0.5_rprec*(dummy(jz)+dummy(jz-1))*dz
 enddo
 
 end subroutine compute_momentum_thickness2
+
+!*******************************************************************************
+subroutine compute_bl_thickness(ubar,delta)
+!*******************************************************************************
+use param
+
+implicit none
+real(rprec), dimension(nz_tot), intent(in) :: ubar
+real(rprec), intent(out) :: delta
+real(rprec) :: dz_f, z_f, ubar_f
+integer :: jz
+
+dz_f = dz/10._rprec
+jz = 1
+z_f = jz*dz_f
+ubar_f = lin_interp1(ubar,z_uv,z_f)
+do while (ubar_f/ubar(nz_tot-1)<0.99_rprec)
+    jz = jz + 1
+    z_f = jz*dz_f
+    ubar_f = lin_interp1(ubar,z_uv,z_f)
+enddo
+delta = z_f
+
+end subroutine compute_bl_thickness
 
 !*******************************************************************************
 subroutine monitor_rescale_recycle()
@@ -409,7 +455,8 @@ write(fid,*) jt_total,&
     samp%delta,&
     samp%utau,&
     samp%theta,&
-    samp%uinf
+    samp%uinf,&
+    iter
 close(fid)
 
 fname = path // 'output/inlet.dat'
@@ -419,9 +466,48 @@ write(fid,*) jt_total,&
     inlt%delta,&
     inlt%utau,&
     inlt%theta,&
-    inlt%uinf
+    inlt%uinf,&
+    iter
 close(fid)
 
 end subroutine monitor_rescale_recycle
+
+!*******************************************************************************
+subroutine monitor_velocity_rescale_recycle(this)
+!*******************************************************************************
+use param, only : path, ny, nz_tot, jt_total, total_time, write_endian
+use string_util, only : string_splice, string_concat
+
+class(sample_inlet_t), intent(in) :: this
+integer :: fid
+character*50 :: fname
+
+!call string_splice(fname,'.vel-tot.', jt_total)
+!fname = trim(adjustl(path)) // trim(adjustl('output/')) // &
+!    trim(adjustl(this%loc_name)) // trim(adjustl(fname))
+!open(unit=fid, file=fname, form='unformatted', convert=write_endian,        &
+!    access='direct', recl=ny*nz_tot*rprec)
+!write(fid,rec=1) this%u%tot
+!write(fid,rec=2) this%v%tot
+!write(fid,rec=3) this%w%tot
+!close(fid)
+
+!call string_splice(fname,'.vel-avg.', jt_total)
+!fname = trim(adjustl(path)) // trim(adjustl('output/')) // &
+!    trim(adjustl(this%loc_name)) // trim(adjustl(fname))
+!open(unit=fid, file=fname, form='unformatted', convert=write_endian,        &
+!    access='direct', recl=nz_tot*rprec)
+!write(fid,rec=1) this%u%avg
+!close(fid)
+
+fname = trim(adjustl(path)) // trim(adjustl('output/')) // &
+    trim(adjustl(this%loc_name)) // trim(adjustl('.vel-avg.dat'))
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+    total_time,&
+    this%u%avg
+close(fid)
+
+end subroutine monitor_velocity_rescale_recycle
 
 end module rescale_recycle
