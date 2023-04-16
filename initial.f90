@@ -35,6 +35,10 @@ use sim_param, only : fxa, fya, fza
 use sim_param, only : fxa, fya, fza
 use sim_param, only : fx, fy, fz
 #endif
+#ifdef PPBL
+use sim_param, only : fxa, fya, fza
+use sim_param, only : fx, fy, fz
+#endif
 use string_util, only : string_concat
 #ifdef PPMPI
 use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWNUP
@@ -42,6 +46,7 @@ use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWNUP
 #ifdef PPSCALARS
 use scalars, only : ic_scal, theta
 #endif
+use functions_bl, only : initialize_bl
 
 implicit none
 
@@ -66,6 +71,11 @@ fza = 0._rprec
 #endif
 
 #ifdef PPLVLSET
+fx = 0._rprec; fy = 0._rprec; fz = 0._rprec
+fxa = 0._rprec;  fya = 0._rprec; fza = 0._rprec
+#endif
+
+#ifdef PPBL
 fx = 0._rprec; fy = 0._rprec; fz = 0._rprec
 fxa = 0._rprec;  fya = 0._rprec; fza = 0._rprec
 #endif
@@ -122,10 +132,11 @@ else if (lbc_mom==1) then
     if (coord == 0) write(*,*) '--> Creating initial laminar profile ',&
         'field with DNS BCs'
     call ic_dns()
-else if (inflow_type == 5) then
+else if (inflow_type == 5 .or. inflow_type == 6) then
     if (coord == 0) write(*,*) '--> Creating initial developing boundary layer ',&
         'velocity field'
-    call ic_developing_bl()
+!    call ic_developing_bl()
+    call initialize_bl()
 else
     if (coord == 0) write(*,*) '--> Creating initial boundary layer velocity ',&
     'field with LES BCs'

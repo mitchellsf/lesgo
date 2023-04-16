@@ -30,6 +30,9 @@ use messages
 use sim_param, only : u, v, w, divtz, p, dpdx, dpdy, dpdz
 use fft
 use emul_complex, only : OPERATOR(.MULI.)
+#ifdef PPBL
+use rescale_recycle_fluc, only : apply_fringe
+#endif
 
 implicit none
 
@@ -78,6 +81,16 @@ do jz = 1, nz-1
     rH_x(:,:,jz) = const2 * u(:,:,jz)
     rH_y(:,:,jz) = const2 * v(:,:,jz)
     rH_z(:,:,jz) = const2 * w(:,:,jz)
+
+!#ifdef PPBL
+!    ! force pressure Poisson RHS to be zero in fringe region
+!    ! allows for a mass sink in fringe region
+!    do jx = 1, apply_fringe%nx
+!        rH_x(apply_fringe%iwrap(jx),:,jz) = 0._rprec
+!        rH_y(apply_fringe%iwrap(jx),:,jz) = 0._rprec
+!        rH_z(apply_fringe%iwrap(jx),:,jz) = 0._rprec
+!    enddo
+!#endif
 
     call dfftw_execute_dft_r2c(forw, rH_x(:,:,jz), rH_x(:,:,jz))
     call dfftw_execute_dft_r2c(forw, rH_y(:,:,jz), rH_y(:,:,jz))

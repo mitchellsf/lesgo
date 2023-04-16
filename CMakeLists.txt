@@ -29,6 +29,7 @@ option(USE_DYN_TN "Dynamically update T, the timescale for Lagrangian averaging,
 option(USE_SAFETYMODE "Set extra safety measures." OFF)
 option(USE_CGNS "Enable CGNS data output." OFF)
 option(USE_SCALARS "Enable scalar transport module." OFF)
+option(USE_BL "Enable boundary layer simulations." ON)
 
 # Enable verbose mode
 set(CMAKE_VERBOSE_MAKEFILE ON)
@@ -178,7 +179,7 @@ set (Sources cfl_util.f90 clocks.f90 convec.f90 coriolis.f90 derivatives.f90 div
      sgs_param.f90 sgs_stag_util.f90 sim_param.f90 sponge.f90 stat_defs.f90
      std_dynamic.f90 string_util.f90 test_filtermodule.f90 tridag_array.f90
      time_average.f90 types.f90 wallstress.f90 init_random_seed.f90
-     iwmles.f90 eqwm_smooth.f90 rescale_recycle.f90)
+     iwmles.f90 eqwm_smooth.f90)
 
 if (USE_MPI)
     add_definitions(-DPPMPI)
@@ -247,6 +248,12 @@ if (USE_SCALARS)
     set(exec_name "${exec_name}-scalars")
     set(Sources ${Sources} scalars.f90 stability.f90)
 endif (USE_SCALARS)
+
+if (USE_BL)
+    add_definitions(-DPPBL)
+    set(Sources ${Sources} rescale_recycle.f90 rescale_recycle_fluc.f90	functions_bl.f90 )
+    set(exec_name "${exec_name}-bl")
+endif (USE_BL)
 
 if (WRITE_ENDIAN STREQUAL "LITTLE")
     add_definitions(-DPPWRITE_LITTLE_ENDIAN)

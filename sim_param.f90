@@ -93,6 +93,15 @@ allocate ( fy(ld, ny, nz) ); fy = 0.0_rprec
 allocate ( fz(ld, ny, nz) ); fz = 0.0_rprec
 #endif
 
+#ifdef PPBL
+allocate ( fxa(ld, ny, lbz:nz) ); fxa = 0.0_rprec
+allocate ( fya(ld, ny, lbz:nz) ); fya = 0.0_rprec
+allocate ( fza(ld, ny, lbz:nz) ); fza = 0.0_rprec
+allocate ( fx(ld, ny, nz) ); fx = 0.0_rprec
+allocate ( fy(ld, ny, nz) ); fy = 0.0_rprec
+allocate ( fz(ld, ny, nz) ); fz = 0.0_rprec
+#endif
+
 allocate( ustar_lbc(nx, ny) ); ustar_lbc = u_star
 
 sim_param_initialized = .true.

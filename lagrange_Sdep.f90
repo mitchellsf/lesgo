@@ -277,19 +277,21 @@ do jz = 1, nz
 
     ! Inflow
     if (inflow_type > 0) then
-       iend = floor (fringe_region_end * nx + 1._rprec)
-       iend = modulo (iend - 1, nx) + 1
-       istart = floor ((fringe_region_end - fringe_region_len) * nx + 1._rprec)
-       istart = modulo (istart - 1, nx) + 1
-
-       Tn = merge(.1_rprec*const*S**2,MM,MM.le..1_rprec*const*S**2)
-       MM = Tn
-       LM(istart + 1:iend, 1:ny) = 0._rprec
-       F_LM(istart + 1:iend, 1:ny, jz) = 0._rprec
-       Tn = merge(.1_rprec*const*S**2,NN,NN.le..1_rprec*const*S**2)
-       NN = Tn
-       QN(istart + 1:iend, 1:ny) = 0._rprec
-       F_QN(istart + 1:iend, 1:ny, jz) = 0._rprec
+        if (inflow_type /= 5 .and. inflow_type /= 6) then
+           iend = floor (fringe_region_end * nx + 1._rprec)
+           iend = modulo (iend - 1, nx) + 1
+           istart = floor ((fringe_region_end - fringe_region_len) * nx + 1._rprec)
+           istart = modulo (istart - 1, nx) + 1
+    
+           Tn = merge(.1_rprec*const*S**2,MM,MM.le..1_rprec*const*S**2)
+           MM = Tn
+           LM(istart + 1:iend, 1:ny) = 0._rprec
+           F_LM(istart + 1:iend, 1:ny, jz) = 0._rprec
+           Tn = merge(.1_rprec*const*S**2,NN,NN.le..1_rprec*const*S**2)
+           NN = Tn
+           QN(istart + 1:iend, 1:ny) = 0._rprec
+           F_QN(istart + 1:iend, 1:ny, jz) = 0._rprec
+        endif
     end if
 
     ! Update running averages (F_LM, F_MM)

@@ -40,6 +40,10 @@ FILE(REMOVE
   "FUNCTIONS.mod"
   "CMakeFiles/lesgo-mpi.dir/functions.mod.stamp"
 
+  "functions_bl.mod"
+  "FUNCTIONS_BL.mod"
+  "CMakeFiles/lesgo-mpi.dir/functions_bl.mod.stamp"
+
   "grid_m.mod"
   "GRID_M.mod"
   "CMakeFiles/lesgo-mpi.dir/grid_m.mod.stamp"
@@ -83,6 +87,10 @@ FILE(REMOVE
   "rescale_recycle.mod"
   "RESCALE_RECYCLE.mod"
   "CMakeFiles/lesgo-mpi.dir/rescale_recycle.mod.stamp"
+
+  "rescale_recycle_fluc.mod"
+  "RESCALE_RECYCLE_FLUC.mod"
+  "CMakeFiles/lesgo-mpi.dir/rescale_recycle_fluc.mod.stamp"
 
   "sgs_param.mod"
   "SGS_PARAM.mod"

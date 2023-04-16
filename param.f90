@@ -198,6 +198,15 @@ real(rprec) :: fringe_region_end  = 1.0_rprec
 ! length of fringe region as a fraction of L_x
 real(rprec) :: fringe_region_len = 0.125_rprec
 
+! Developing boundary layer settings
+! Averaging (filtering) time scales
+real(rprec) :: tavg1_bl = 1._rprec
+real(rprec) :: tavg2_bl = 1._rprec
+! Time when tavg2_bl is applied
+real(rprec) :: start_tavg2_bl = 1._rprec
+! Time when time averaging begins (tavg=tavg+dt)
+real(rprec) :: start_tavg_bl = 1._rprec
+
 ! Uniform inflow velocity
 real(rprec) :: inflow_velocity = 1.0_rprec
 

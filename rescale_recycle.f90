@@ -151,7 +151,7 @@ do jz = 1,nz_tot
 enddo
 samp%utau = sqrt(sum(sqrt(txz(isample,1:ny,1)**2.0+txz(isample,1:ny,1)**2.0))/ny)
 call mpi_bcast(samp%utau,1,MPI_RPREC,0,MPI_COMM_WORLD,ierr)
-call compute_momentum_thickness2(samp%u%avg,samp%theta)
+call compute_momentum_thickness2(samp%u%avg,samp%theta,samp%utau)
 call compute_bl_thickness(samp%u%avg,samp%delta)
 
 ! Inlet plane computation (sampling plane rescaled)
@@ -212,6 +212,7 @@ a = 4._rprec
 b = 0.2_rprec
 gg = inl%utau/sam%utau
 do jz = 1,nz_tot
+!    ubar_inner(jz) = inl%utau*f_fit(z_uv(jz)*inl%utau/nu_molec)
     ubar_inner(jz) = gg*lin_interp1(sam%u%avg,z_uv*sam%utau/nu_molec,&
         z_uv(jz)*inl%utau/nu_molec)
     ubar_outer(jz) = gg*lin_interp1(sam%u%avg,z_uv/sam%delta,&
@@ -258,10 +259,9 @@ do jz = 1,nz_tot
         (wp_outer(:,jz))*weight_w
 enddo
 
-
 inl%u%avg = sum(inl%u%tot,1)/ny
 inl%uinf = inl%u%avg(nz_tot-1)
-call compute_momentum_thickness2(inl%u%avg,inl%theta)
+call compute_momentum_thickness2(inl%u%avg,inl%theta,inl%utau)
 !inl%utau = retd_fit(inl%u%avg(1)*z_uv(1)/nu_molec)*nu_molec/z_uv(1)
 
 end subroutine rescale_velocity
@@ -269,14 +269,14 @@ end subroutine rescale_velocity
 !*******************************************************************************
 subroutine iterate_utau(samp,inlt)
 !*******************************************************************************
+use param, only : coord, nu_molec
 
 implicit none
-real(rprec) :: tol, utau_before, utau_after
+real(rprec) :: tol, utau_before, utau_after, retd_inlt
 type(sample_inlet_t), intent(inout) :: samp, inlt
 integer :: iter
 
 !tol = 0.01_rprec
-!
 !utau_before = 1._rprec
 !utau_after = -1._rprec
 !iter = 1
@@ -286,12 +286,15 @@ integer :: iter
 !    utau_after = inlt%utau
 !    iter = iter + 1
 !enddo
-
+!if (coord==0) then
+!    write(*,*) iter
+!endif
 
 inlt%utau = samp%utau*(samp%theta/1._rprec)**0.125_rprec
 !inlt%utau = samp%utau*(samp%theta/inlt%theta)**0.125_rprec
 !inlt%utau = 0.9_rprec*samp%utau
-
+!retd_inlt = 0.2988_rprec/nu_molec + 70.2624_rprec
+!inlt%utau = retd_inlt*nu_molec/inlt%delta
 call rescale_velocity(samp,inlt)
 
 end subroutine iterate_utau
@@ -397,24 +400,93 @@ call mpi_allreduce(theta_local,theta,1,MPI_RPREC,MPI_SUM, &
 end subroutine compute_momentum_thickness
 
 !*******************************************************************************
-subroutine compute_momentum_thickness2(ubar,theta)
+subroutine compute_momentum_thickness2(ubar,theta,utau)
 !*******************************************************************************
 use param
 
 implicit none
 real(rprec), dimension(nz_tot), intent(in) :: ubar
+real(rprec), intent(in) :: utau
 real(rprec), intent(out) :: theta
-real(rprec), dimension(nz_tot) :: dummy, uinf
+real(rprec), dimension(nz_tot) :: dummy
+real(rprec) :: uinf, a, Deltap, hwm
 integer :: jz
 
 uinf = ubar(nz_tot-1)
 dummy = ubar/uinf*(1._rprec-ubar/uinf)
-theta = 0.25_rprec*dummy(1)*dz
-do jz = 2, nz_tot-1
+!theta = 0.25_rprec*dummy(1)*dz
+a = ubar(wmpt)/uinf
+hwm = (wmpt-0.5_rprec)*dz
+Deltap = hwm*utau/nu_molec
+theta = hwm*a*(&
+    (1._rprec-a)*(1._rprec-deltas_fit(Deltap)) + a*theta_fit(Deltap) );
+do jz = wmpt+1, nz_tot-1
     theta = theta + 0.5_rprec*(dummy(jz)+dummy(jz-1))*dz
 enddo
 
 end subroutine compute_momentum_thickness2
+
+!*******************************************************************************
+function deltas_fit(Deltap) result(deltas)
+!*******************************************************************************
+
+implicit none
+real(rprec) :: Deltap
+real(rprec) :: deltas
+real(rprec) :: Redelta, k, c1, c2, c3, c4, gamma1, deltas_log
+
+Redelta = Deltap*f_fit(Deltap)
+k = 0.4_rprec
+c1 = 23.664_rprec
+c2 = 0.0016_rprec
+c3 = 1.516_rprec
+c4 = 1.177_rprec
+gamma1 = 1._rprec/(1._rprec+c2*Redelta**c4)
+deltas_log = c1/Redelta+Deltap/Redelta/k
+deltas = gamma1/2._rprec + (1._rprec-gamma1)**c3*deltas_log
+
+end function deltas_fit
+
+!*******************************************************************************
+function theta_fit(Deltap) result(theta)
+!*******************************************************************************
+
+implicit none
+real(rprec) :: Deltap
+real(rprec) :: theta
+real(rprec) :: Redelta, k, c5, c6, c7, c8, gamma2, theta_log
+
+Redelta = Deltap*f_fit(Deltap)
+k = 0.4_rprec
+c5 = -103.5_rprec
+c6 = 2586._rprec
+c7 = 0.00154_rprec
+c8 = 2.475_rprec
+gamma2 = 1._rprec/(1._rprec+c7*Redelta)
+theta_log = 1._rprec/Redelta*(c5+Deltap/k) + &
+    Deltap/Redelta**2._rprec*(c6-2._rprec*Deltap/k**2._rprec)
+theta = gamma2/6._rprec + (1._rprec-gamma2)**c8*theta_log
+
+end function theta_fit
+
+!*******************************************************************************
+function f_fit(Deltap) result(func)
+!*******************************************************************************
+
+implicit none
+real(rprec) :: Deltap
+real(rprec) :: func
+real(rprec) :: B, k, k2, beta, k1
+
+B = 4.95_rprec
+k = 0.4_rprec
+k2 = 9.753_rprec
+beta = 1.903_rprec
+k1 = 1._rprec/k*log(k2)+B
+func = (1._rprec/k*log(k2+Deltap)+B)*&
+    (1._rprec+(Deltap/k1)**-beta)**(-1._rprec/beta)
+
+end function f_fit
 
 !*******************************************************************************
 subroutine compute_bl_thickness(ubar,delta)

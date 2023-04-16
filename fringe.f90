@@ -60,7 +60,7 @@ contains
 !*******************************************************************************
 function constructor(l_end, l_len) result(this)
 !*******************************************************************************
-use param, only : nx, pi
+use param, only : nx, pi, inflow_type
 type(fringe_t) :: this
 real(rprec), intent(in) :: l_end, l_len
 integer :: i
@@ -76,8 +76,20 @@ this%istart = floor((this%l_end - this%l_len) * nx + 1.0_rprec)
 this%nx = this%iend - this%istart
 
 ! Weighting functions
-allocate(this%alpha(this%nx))
-allocate(this%beta(this%nx))
+allocate(this%alpha(this%nx)); this%alpha = 0._rprec
+allocate(this%beta(this%nx)); this%beta = 0._rprec
+
+!#ifdef PPBL
+!
+!do i = 1, this%nx
+!
+!    this%beta(i) = weight_bl(this,i)
+!    this%alpha(i) = 1._rprec - this%beta(i)
+!
+!enddo
+!
+!#else
+
 do i = 1, this%nx
     if (i+this%istart > this%iplateau) then
         this%beta(i) = 1.0_rprec
@@ -88,6 +100,8 @@ do i = 1, this%nx
     this%alpha(i) = 1._rprec - this%beta(i)
 end do
 
+!#endif
+
 ! Allocate and assign wrapped index and fringe weights
 allocate(this%iwrap(this%nx))
 do i = 1, this%nx
@@ -95,5 +109,58 @@ do i = 1, this%nx
 enddo
 
 end function constructor
+
+!*******************************************************************************
+function weight_bl(this,i) result(weight)
+!*******************************************************************************
+use param, only : coord, dt
+
+type(fringe_t),intent(in) :: this
+real(rprec) :: delta_rise, delta_fall, weight_max
+real(rprec) :: weight
+integer, intent(in) :: i
+
+! in the future these should be specified in lesgo.conf
+delta_rise = this%nx*0.2_rprec
+delta_fall = this%nx*0.1_rprec
+weight_max = 1._rprec
+
+weight = weight_max*( smooth_step(real(i,rprec)/delta_rise) &
+    - smooth_step((real(i,rprec)-real(this%nx,rprec))/delta_fall+1._rprec) )
+
+end function weight_bl
+
+!*******************************************************************************
+function weight_bl2(this,i) result(weight)
+!*******************************************************************************
+use param, only : coord
+
+type(fringe_t),intent(in) :: this
+real(rprec) :: delta_rise
+real(rprec) :: weight
+integer, intent(in) :: i
+
+delta_rise = this%nx*0.2_rprec
+
+weight = smooth_step(real(i,rprec)/delta_rise)
+
+end function weight_bl2
+
+!*******************************************************************************
+function smooth_step(x) result(s)
+!*******************************************************************************
+
+real(rprec), intent(in) :: x
+real(rprec) :: s
+
+if (x .le. 0._rprec) then
+    s = 0._rprec
+elseif (x .ge. 1._rprec) then
+    s = 1._rprec
+else
+    s = 1._rprec/(1._rprec+exp(1._rprec/(x-1._rprec)+1._rprec/x))
+endif
+
+end function
 
 end module fringe

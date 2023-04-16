@@ -39,7 +39,8 @@ use cfl_util
 use sgs_stag_util, only : sgs_stag
 use forcing
 use functions, only: get_tau_wall_bot, get_tau_wall_top
-
+use inflow, only: apply_inflow
+use rescale_recycle_fluc, only : apply_fringe
 #ifdef PPMPI
 use mpi
 use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWN
@@ -65,7 +66,7 @@ use messages
 implicit none
 
 character (*), parameter :: prog_name = 'main'
-integer :: nca
+integer :: nca,jx
 character(:), allocatable :: ca
 
 integer :: jt_step, nstart
@@ -109,6 +110,7 @@ jt_total = 0
 
 ! Initialize all data
 call initialize()
+call output_loop()
 
 if(coord == 0) then
     call clock%stop
@@ -260,11 +262,11 @@ time_loop: do jt_step = nstart, nsteps
     clock_total_f = clock_total_f + clock_forcing % time
 
     !  Update RHS with applied forcing
-#if defined(PPTURBINES) || defined(PPATM)
+!#if defined(PPTURBINES) || defined(PPATM)
     RHSx(:,:,1:nz-1) = RHSx(:,:,1:nz-1) + fxa(:,:,1:nz-1)
     RHSy(:,:,1:nz-1) = RHSy(:,:,1:nz-1) + fya(:,:,1:nz-1)
     RHSz(:,:,1:nz-1) = RHSz(:,:,1:nz-1) + fza(:,:,1:nz-1)
-#endif
+!#endif
 
     !//////////////////////////////////////////////////////
     !/// EULER INTEGRATION CHECK                        ///
@@ -306,7 +308,7 @@ time_loop: do jt_step = nstart, nsteps
     v(:,:,nz) = BOGUS
     if(coord < nproc-1) w(:,:,nz) = BOGUS
 #endif
-
+!    call apply_inflow()
     !//////////////////////////////////////////////////////
     !/// PRESSURE SOLUTION                              ///
     !//////////////////////////////////////////////////////
@@ -315,6 +317,18 @@ time_loop: do jt_step = nstart, nsteps
     !   do not need to store p --> only need gradient
     !   provides p, dpdx, dpdy at 0:nz-1 and dpdz at 1:nz-1
     call press_stag_array()
+
+!    if (inflow_type==5 .or. inflow_type==6) then
+!!        do jx = 1,apply_fringe%nx
+!!            p(apply_fringe%iwrap(jx),:,:) = 0._rprec
+!!            dpdx(apply_fringe%iwrap(jx),:,:) = 0._rprec
+!!            dpdy(apply_fringe%iwrap(jx),:,:) = 0._rprec
+!!            dpdz(apply_fringe%iwrap(jx),:,:) = 0._rprec
+!!        enddo
+!        dpdx = 0._rprec
+!        dpdy = 0._rprec
+!        dpdz = 0._rprec
+!    endif
 
     ! Add pressure gradients to RHS variables (for next time step)
     !   could avoid storing pressure gradients - add directly to RHS

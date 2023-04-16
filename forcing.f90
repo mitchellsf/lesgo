@@ -85,6 +85,12 @@ subroutine forcing_applied()
 !  in the evaluation of u* so that mass conservation is preserved.
 !
 use types, only : rprec
+use inflow, only : apply_inflow
+use param, only : inflow_type
+use sim_param, only : fxa, fya, fza
+#ifdef PPBL
+use rescale_recycle_fluc, only : fringe_force
+#endif
 
 #ifdef PPTURBINES
 use sim_param, only : fxa, fya, fza
@@ -106,12 +112,19 @@ fza = 0._rprec
 call turbines_forcing ()
 #endif
 
-
 #ifdef PPATM
 fxa = 0._rprec
 fya = 0._rprec
 fza = 0._rprec
 call atm_lesgo_forcing ()
+#endif
+    
+#ifdef PPBL
+fxa = 0._rprec
+fya = 0._rprec
+fza = 0._rprec
+call apply_inflow()
+!call fringe_force()
 #endif
 
 end subroutine forcing_applied
@@ -128,6 +141,11 @@ subroutine forcing_induced()
 !  placed in forcing_applied.
 !
 use types, only : rprec
+#ifdef PPBL
+use param, only : coord
+use inflow, only : apply_inflow
+use sim_param, only : fx, fy, fz
+#endif
 #ifdef PPLVLSET
 use level_set, only : level_set_forcing
 use sim_param, only : fx, fy, fz
@@ -143,6 +161,13 @@ fz = 0._rprec
 call level_set_forcing ()
 #endif
 
+!#ifdef PPBL
+!fx = 0._rprec
+!fy = 0._rprec
+!fz = 0._rprec
+!call apply_inflow()
+!#endif
+
 end subroutine forcing_induced
 
 !*******************************************************************************
@@ -157,7 +182,10 @@ use messages
 use inflow, only : apply_inflow
 #ifdef PPMPI
 use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWNUP
-
+#endif
+#ifdef PPBL
+use functions_bl, only : wtop_bl
+use rescale_recycle_fluc, only : set_bl_inflow_velocity, fringe_force
 #endif
 implicit none
 
@@ -206,7 +234,43 @@ end do
 end do
 end do
 
-call apply_inflow()
+!#ifdef PPBL    
+!if (coord==0) then
+!    do jx = 1,nx
+!    do jy = 1,ny
+!    do jz = jz_min,nz
+!        if (fz(jx,jy,jz) /= fz(jx,jy,jz)) then
+!            write(*,*) '(',jx,',',jy,',',jz,')'
+!        endif
+!    enddo
+!    enddo
+!    enddo
+!endif
+!#endif
+
+!#ifdef PPBL
+!fxa = 0._rprec
+!fya = 0._rprec
+!fza = 0._rprec
+!call apply_inflow()
+!#endif
+
+! damps fluctuations in fringe
+!#ifdef PPBL
+!!fxa = 0._rprec
+!!fya = 0._rprec
+!!fza = 0._rprec
+!call fringe_force()
+!#endif
+
+!call apply_inflow()
+!call set_bl_inflow_velocity()
+
+!#ifdef PPBL
+!RHSx = RHSx + fxa
+!RHSy = RHSy + fya
+!RHSz = RHSz + fza
+!#endif
 
 !--left this stuff last, so BCs are still enforced, no matter what
 !  inflow_cond does
@@ -227,8 +291,15 @@ if (coord == nproc-1) then
         u(:,:,nz) = u(:,:,nz-1)
         v(:,:,nz) = v(:,:,nz-1)
     endif
-    ! no permeability
-    w(:, :, nz)=0._rprec
+    if (inflow_type /= 5 .and. inflow_type /= 6) then
+        ! no permeability
+        w(:, :, nz)=0._rprec
+    else
+        do jx = 1,nx
+            w(jx,:,nz) = wtop_bl(jx)
+        enddo
+    endif
+
 #ifdef PPMPI
 endif
 #endif

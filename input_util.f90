@@ -473,7 +473,15 @@ do
                 read (buff(equal_pos+1:), *) fringe_region_end
             case ('FRINGE_REGION_LEN')
                 read (buff(equal_pos+1:), *) fringe_region_len
-            case ('INFLOW_VELOCITY')
+            case ('TAVG1_BL')
+                read (buff(equal_pos+1:), *) tavg1_bl
+            case ('TAVG2_BL')
+                read (buff(equal_pos+1:), *) tavg2_bl
+            case ('START_TAVG2_BL')
+                read (buff(equal_pos+1:), *) start_tavg2_bl
+            case ('START_TAVG_BL')
+                read (buff(equal_pos+1:), *) start_tavg_bl
+            case ('inflow_velocity')
                 read (buff(equal_pos+1:), *) inflow_velocity
             case ('SAMPLING_REGION_END')
                 read (buff(equal_pos+1:), *) sampling_region_end

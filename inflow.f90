@@ -31,6 +31,7 @@ use hit_inflow
 #endif
 use shifted_inflow
 use rescale_recycle
+use rescale_recycle_fluc
 implicit none
 
 private
@@ -65,6 +66,9 @@ select case (inflow_type)
     ! rescale-recycle
     case (5)
         call rescale_recycle_init()
+    ! rescale-recycle fluctuations only (mean flow prescribed)
+    case (6)
+        call rescale_recycle_fluc_init()
 end select
 
 end subroutine inflow_init
@@ -97,6 +101,9 @@ select case (inflow_type)
     ! rescale-recycle
     case (5)
         call rescale_recycle_calc()
+    ! rescale-recycle fluctuations only (mean flow prescribed)
+    case (6)
+        call rescale_recycle_fluc_calc()
 end select
 
 end subroutine apply_inflow

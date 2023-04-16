@@ -91,7 +91,7 @@ else
     dvdz(1:nx,1:ny,nz) = -dudz_tot*sin(theta_d)
 end if
 
-!if ( mod(jt_total,100)==0 ) then
+!if ( mod(jt_total,1)==0 ) then
 !    call eqwm_monitor()
 !end if
 
@@ -112,16 +112,24 @@ integer :: fid, i, j, k
 character*50 :: fname
 
 if (coord==0) then
+!    txzbar = 0._rprec
+!    tyzbar = 0._rprec
+!    do i = 1, nx
+!    do j = 1, ny
+!        txzbar = txzbar + txz(i,j,1)
+!        tyzbar = tyzbar + tyz(i,j,1)
+!    enddo
+!    enddo
+!    txzbar = txzbar/nx/ny
+!    tyzbar = tyzbar/nx/ny
     txzbar = 0._rprec
     tyzbar = 0._rprec
-    do i = 1, nx
     do j = 1, ny
-        txzbar = txzbar + txz(i,j,1)
-        tyzbar = tyzbar + tyz(i,j,1)
+        txzbar = txzbar + txz(1,j,1)
+        tyzbar = tyzbar + tyz(1,j,1)
     enddo
-    enddo
-    txzbar = txzbar/nx/ny
-    tyzbar = tyzbar/nx/ny
+    txzbar = txzbar/ny
+    tyzbar = tyzbar/ny
     fname = path // 'output/eqwm_track_bot.dat'
     open(newunit=fid, file=fname, status='unknown',   &
         position='append')

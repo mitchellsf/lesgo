@@ -1,5 +1,6 @@
 #!/bin/sh
 ml cmake
+ml intel/2020.1
 cmake . -Bbld
 cmake --build bld
 cp bld/lesgo* .
