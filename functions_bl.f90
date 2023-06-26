@@ -26,9 +26,11 @@ implicit none
 
 save
 private
-public initialize_bl, bl_mean_velocity, wtop_bl
+public initialize_bl, bl_mean_velocity, wtop_bl, ws_inter
 
 real(rprec), dimension(:), allocatable :: wtop_bl
+real(rprec), dimension(:,:), allocatable :: gamma_r
+real(rprec) :: total_time_ws_inter
 
 contains
 
@@ -84,7 +86,7 @@ end subroutine initialize_bl
 subroutine bl_mean_velocity(ubar,utau,wbar)
 !*******************************************************************************
 use param, only : nu_molec, dx, dz, nx, ny, nz, nz_tot, coord, nproc,&
-    L_x, fringe_region_len, pi
+    L_x, fringe_region_len, pi, suction_blowing, phi_top_sb
 
 implicit none
 real(rprec), dimension(nx,nz_tot) :: up, ubar, wbar
@@ -163,8 +165,16 @@ ixp = ix1+(ix2-ix1)/2
 x1 = (ix1-1)*dx
 x2 = (ix2-1)*dx
 xp = (ixp-1)*dx
-wtop_bl = ddx_deltas
-wtop_bl(ix2:nx) = wtop_bl(1) ! constant in fringe region
+if (suction_blowing) then
+    wtop_bl = ddx_deltas
+    do jx = 1,nx
+        wtop_bl(jx) = phi_top_sb
+    enddo
+    call suction_blowing_bc()
+else
+    wtop_bl = ddx_deltas
+    wtop_bl(ix2:nx) = wtop_bl(1) ! constant in fringe region
+endif
 qout = wtop_bl(1)*(L_x-x2)
 !qout = 0._rprec
 !qtot = 0.5_rprec*(wtop_bl(1)+wtop_bl(nx))*dx
@@ -199,6 +209,24 @@ write(*,*) 'Qtot: ',qtot
 !endif
 
 end subroutine bl_mean_velocity
+
+!*******************************************************************************
+subroutine suction_blowing_bc()
+!*******************************************************************************
+use param, only : nx, dx, fringe_region_len, wmax_sb, sigma_sb, xc_sb, phi_top_sb
+
+implicit none
+real(rprec) :: xx
+integer :: jx, ix1
+
+ix1 = modulo(floor((1._rprec-fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
+do jx = 2,ix1
+    xx = (jx-1._rprec)*dx
+    wtop_bl(jx) = -sqrt(2._rprec)*wmax_sb*(xx-xc_sb)/sigma_sb*&
+        exp(0.5_rprec-((xx-xc_sb)/sigma_sb)**2._rprec) + phi_top_sb
+enddo
+
+end subroutine suction_blowing_bc
 
 !*******************************************************************************
 subroutine bl_fluctuations(utau,ufluc,vfluc,wfluc)
@@ -440,5 +468,48 @@ func = (1._rprec/k*log(k2+Deltap)+B)*&
 
 end function f_fit
 
+
+!*******************************************************************************
+subroutine ws_inter()
+!*******************************************************************************
+
+use param, only : jt_total, nx, ny, dt, write_endian
+use param, only : ws_inter_nstart, ws_inter_nend
+use sim_param, only : txz
+
+implicit none
+integer :: jx, jy
+character(64) :: fname
+
+if (jt_total == ws_inter_nstart) then
+
+    allocate(gamma_r(nx,ny))
+    gamma_r = 0._rprec
+    total_time_ws_inter = 0._rprec
+
+else
+    do jx = 1,nx
+    do jy = 1,ny
+        if (-txz(jx,jy,1) < 0) then
+            gamma_r(jx,jy) = gamma_r(jx,jy) + dt
+        endif
+    enddo
+    enddo
+    total_time_ws_inter = total_time_ws_inter + dt
+
+endif
+
+if (jt_total == ws_inter_nend) then
+
+    gamma_r = gamma_r/total_time_ws_inter
+    fname = 'ws_inter.bin'
+    open(unit=13,file=fname,action='write',access='direct',&
+        form='unformatted',convert=write_endian,recl=nx*ny*rprec)
+    write(13,rec=1) gamma_r(1:nx,1:ny)
+    close(13)
+
+endif
+
+end subroutine ws_inter
 
 end module functions_bl

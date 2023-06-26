@@ -88,9 +88,9 @@ use types, only : rprec
 use inflow, only : apply_inflow
 use param, only : inflow_type
 use sim_param, only : fxa, fya, fza
-#ifdef PPBL
-use rescale_recycle_fluc, only : fringe_force
-#endif
+!#ifdef PPBL
+!use rescale_recycle_fluc, only : fringe_force
+!#endif
 
 #ifdef PPTURBINES
 use sim_param, only : fxa, fya, fza
@@ -185,7 +185,7 @@ use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWNUP
 #endif
 #ifdef PPBL
 use functions_bl, only : wtop_bl
-use rescale_recycle_fluc, only : set_bl_inflow_velocity, fringe_force
+!use rescale_recycle_fluc, only : set_bl_inflow_velocity
 #endif
 implicit none
 
@@ -297,6 +297,12 @@ if (coord == nproc-1) then
     else
         do jx = 1,nx
             w(jx,:,nz) = wtop_bl(jx)
+            ! irrotational transpiration BC (Coleman et al. 2018)
+            if (jx==1) then
+                u(1,:,nz) = u(1,:,nz-1) + dz*(wtop_bl(1)-wtop_bl(nx))/dx
+            else
+                u(jx,:,nz) = u(jx,:,nz-1) + dz*(wtop_bl(jx)-wtop_bl(jx-1))/dx
+            endif
         enddo
     endif
 

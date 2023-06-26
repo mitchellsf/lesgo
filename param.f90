@@ -230,6 +230,15 @@ integer :: stop_random_force = 20000
 ! specify the rms magnitude of the random forcing to apply
 real(rprec) :: rms_random_force = 0.4_rprec
 
+! if true, applies a suction and blowing transpiration bc on the top surface
+! can only be used for developing boundary layer simulations
+logical :: suction_blowing = .false.
+real(rprec) ::  wmax_sb = 0.1333_rprec
+real(rprec) :: sigma_sb = 325.3333_rprec
+real(rprec) :: xc_sb = 1300.0_rprec
+real(rprec) :: phi_top_sb = 0.0034_rprec
+
+
 !---------------------------------------------------
 ! DATA OUTPUT PARAMETERS
 !---------------------------------------------------
@@ -278,5 +287,13 @@ logical :: zplane_calc=.false.
 integer :: zplane_nstart=10000, zplane_nend=50000, zplane_nskip=10000
 integer :: zplane_nloc=1
 real(rprec), allocatable, dimension(:) :: zplane_loc
+
+! ws plane instantaneous output
+logical :: ws_plane_calc=.false.
+integer :: ws_plane_nstart=10000, ws_plane_nend=50000, ws_plane_nskip=10000
+
+! ws plane instantaneous output
+logical :: ws_inter_calc=.false.
+integer :: ws_inter_nstart=10000, ws_inter_nend=50000
 
 end module param

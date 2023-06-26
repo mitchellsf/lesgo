@@ -501,6 +501,16 @@ do
                 read (buff(equal_pos+1:), *) stop_random_force
             case ('RMS_RANDOM_FORCE')
                 read (buff(equal_pos+1:), *) rms_random_force
+            case ('SUCTION_BLOWING')
+                read (buff(equal_pos+1:), *) suction_blowing
+            case ('WMAX_SB')
+                read (buff(equal_pos+1:), *) wmax_sb
+            case ('SIGMA_SB')
+                read (buff(equal_pos+1:), *) sigma_sb
+            case ('XC_SB')
+                read (buff(equal_pos+1:), *) xc_sb
+            case ('PHI_TOP_SB')
+                read (buff(equal_pos+1:), *) phi_top_sb
 
 #ifdef PPHIT
             ! Read the input for HIT case
@@ -649,6 +659,20 @@ do
                 read (buff(equal_pos+1:), *) zplane_nskip
             case ('ZPLANE_LOC')
                 call parse_vector( buff(equal_pos+1:), zplane_nloc, zplane_loc )
+            case ('WS_PLANE_CALC')
+                read (buff(equal_pos+1:), *) ws_plane_calc
+            case ('WS_PLANE_NSTART')
+                read (buff(equal_pos+1:), *) ws_plane_nstart
+            case ('WS_PLANE_NEND')
+                read (buff(equal_pos+1:), *) ws_plane_nend
+            case ('WS_PLANE_NSKIP')
+                read (buff(equal_pos+1:), *) ws_plane_nskip
+            case ('WS_INTER_CALC')
+                read (buff(equal_pos+1:), *) ws_inter_calc
+            case ('WS_INTER_NSTART')
+                read (buff(equal_pos+1:), *) ws_inter_nstart
+            case ('WS_INTER_NEND')
+                read (buff(equal_pos+1:), *) ws_inter_nend
             case default
                 if (coord == 0) write(*,*) 'Found unused data value in '       &
                     // block_name // ' block: ' // buff(1:equal_pos-1)

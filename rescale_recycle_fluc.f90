@@ -26,8 +26,7 @@ use fringe
 implicit none
 
 private
-public rescale_recycle_fluc_init, rescale_recycle_fluc_calc, apply_fringe,&
-    set_bl_inflow_velocity, fringe_force
+public rescale_recycle_fluc_init, rescale_recycle_fluc_calc, apply_fringe
 
 integer :: isample, iter
 
@@ -219,8 +218,6 @@ samp%tauw = dt/tavg*sum(abs(txz(isample,1:ny,1)))/ny &
 !call compute_bl_thickness(samp)
 call compute_momentum_thickness2(samp)
 
-!! Compute inlet mean flow using fits from Monkewitz et al. 2008
-!call compute_mean_velocity()
 ! Mean flow from initialized velocity profile
 inlt%u%avg = ubar_init(1,:)
 inlt%utau = utau_init(1)
@@ -229,9 +226,8 @@ inlt%w%avg = wbar_init(1,:)
 inlt%v%avg = 0._rprec
 call compute_bl_thickness(inlt)
 call compute_momentum_thickness2(inlt)
-! Mean vertical velocity is computed when flow is initialized
-! Only rescales the fluctuations
-call rescale_velocity()
+! Only rescales the fluctuations (total velocity updated here)
+call rescale_fluctuations()
 !check fluctuations average to zero
 u_fluc_avg = dt/tavg*sum(inlt%u%fluc,1)/ny + (1._rprec-dt/tavg)*u_fluc_avg
 v_fluc_avg = dt/tavg*sum(inlt%v%fluc,1)/ny + (1._rprec-dt/tavg)*v_fluc_avg
@@ -243,6 +239,7 @@ w_fluc_avg = dt/tavg*sum(inlt%w%fluc,1)/ny + (1._rprec-dt/tavg)*w_fluc_avg
 !endif
 
 ! simple mirroring technique to reduce error accumulation
+! could also add spanwise shift
 do jx = 1,apply_fringe%nx
     u_fringe(jx,1,:) = inlt%u%tot(1,:)
     v_fringe(jx,1,:) = -inlt%v%tot(1,:)
@@ -288,27 +285,6 @@ do i = 1, apply_fringe%nx
         (v_fringe(i,1:ny,kstart:kend+1) - v(i_w,1:ny,1:nz))
     fza(i_w,1:ny,1:nz) = apply_fringe%beta(i)/force_tscale*&
         (w_fringe(i,1:ny,kstart:kend+1) - w(i_w,1:ny,1:nz))
-!    fx(i_w,1:ny,1:nz) = apply_fringe%beta(i)*&
-!        (u_fringe(i,1:ny,kstart:kend+1) - u(i_w,1:ny,1:nz))
-!    fy(i_w,1:ny,1:nz) = apply_fringe%beta(i)*&
-!        (v_fringe(i,1:ny,kstart:kend+1) - v(i_w,1:ny,1:nz))
-!    fz(i_w,1:ny,1:nz) = apply_fringe%beta(i)*&
-!        (w_fringe(i,1:ny,kstart:kend+1) - w(i_w,1:ny,1:nz))
-!    if (coord==0) then
-!        do jy = 1,ny
-!        do jz = 2,nz-1
-!            if (fz(i_w,jy,jz) /= fz(i_w,jy,jz)) then
-!                write(*,*) '(',i_w,',',jy,',',jz,')'
-!            endif
-!        enddo
-!        enddo
-!    endif
-!    if (coord==0) then
-!        write(*,*) 'fz,i = ',i_w,sum(sum(fz(i_w,1:ny,1:nz),2),1)/ny/nz
-!        write(*,*) 'w,i = ',i_w,sum(sum(w(i_w,1:ny,1:nz),2),1)/ny/nz
-!        write(*,*) 'wf,i = ',i_w,sum(sum(w_fringe(i_w,1:ny,1:nz),2),1)/ny/nz
-!        write(*,*) 'beta,i = ',i_w,apply_fringe%beta(i)
-!    endif
 end do
 !do i = 1, apply_fringe%nx
 !    i_w = apply_fringe%iwrap(i)
@@ -336,69 +312,7 @@ endif
 end subroutine rescale_recycle_fluc_calc
 
 !*******************************************************************************
-subroutine set_bl_inflow_velocity()
-!*******************************************************************************
-use sim_param, only : u,v,w
-use param, only : nx,ny,nz,coord
-
-implicit none
-integer :: i, i_w, kstart, kend
-
-kstart = coord*(nz-1) + 1
-kend = (coord+1)*(nz-1)
-
-! Apply inflow conditions
-do i = 1, apply_fringe%nx
-    i_w = apply_fringe%iwrap(i)
-    u(i_w,1:ny,1:nz) = apply_fringe%alpha(i) * u(i_w,1:ny,1:nz)&
-        + apply_fringe%beta(i) * u_fringe(i,1:ny,kstart:kend+1)
-    v(i_w,1:ny,1:nz) = apply_fringe%alpha(i) * v(i_w,1:ny,1:nz)&
-        + apply_fringe%beta(i) * v_fringe(i,1:ny,kstart:kend+1)
-    w(i_w,1:ny,1:nz) = apply_fringe%alpha(i) * w(i_w,1:ny,1:nz)&
-        + apply_fringe%beta(i) * w_fringe(i,1:ny,kstart:kend+1)
-end do
-
-
-end subroutine set_bl_inflow_velocity
-
-!*******************************************************************************
-subroutine fringe_force()
-!*******************************************************************************
-
-use param, only : nx,ny,nz,nz_tot,dt,L_z
-use sim_param, only : u, v, w, fxa, fya, fza
-
-implicit none
-real(rprec), dimension(ny) ::qx, qy, qz
-real(rprec) :: wpull, Upsilon, zalpha, zbeta
-integer :: i, jx, jz
-
-!wpull = abs(wbar_init(1,nz_tot))
-wpull = 0._rprec
-Upsilon = 2._rprec
-zalpha = 0.5_rprec*L_z
-zbeta = 0.2_rprec*L_z
-
-do i = 1, apply_fringe%nx
-    jx = apply_fringe%iwrap(i)
-do jz = 1,nz
-    qx = -Upsilon*(u(jx,:,jz)-sum(u(jx,:,jz))/ny)*tanh((z_uv(jz)/zbeta)**2.0)
-    qy = -Upsilon*(v(jx,:,jz)-sum(v(jx,:,jz))/ny)*tanh((z_uv(jz)/zbeta)**2.0)
-    qz = -wpull*tanh((z_w(jz)/zalpha)**2.0) &
-        - Upsilon*(w(jx,:,jz)-sum(w(jx,:,jz))/ny)*tanh((z_w(jz)/zbeta)**2.0)
-    fxa(jx,:,jz) = apply_fringe%beta(i)*(qx-u(jx,:,jz))
-    fya(jx,:,jz) = apply_fringe%beta(i)*(qy-v(jx,:,jz))
-    fza(jx,:,jz) = apply_fringe%beta(i)*(qz-w(jx,:,jz))
-!    u(jx,:,jz) = u(jx,:,jz) + qx
-!    v(jx,:,jz) = v(jx,:,jz) + qy
-!    w(jx,:,jz) = w(jx,:,jz) + qz
-enddo
-enddo
-
-end subroutine fringe_force
-
-!*******************************************************************************
-subroutine rescale_velocity()
+subroutine rescale_fluctuations()
 !*******************************************************************************
 use param
 
@@ -461,7 +375,7 @@ do jz = 1,nz_tot
     inlt%w%fluc(:,jz) = inlt%w%tot(:,jz) - inlt%w%avg(jz)
 enddo
 
-end subroutine rescale_velocity
+end subroutine rescale_fluctuations
 
 !*******************************************************************************
 function lin_interp1(phi,grid,pt) result(phi_i)

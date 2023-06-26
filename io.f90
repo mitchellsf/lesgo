@@ -546,6 +546,9 @@ use param, only : domain_calc, domain_nstart, domain_nend, domain_nskip
 use param, only : xplane_calc, xplane_nstart, xplane_nend, xplane_nskip
 use param, only : yplane_calc, yplane_nstart, yplane_nend, yplane_nskip
 use param, only : zplane_calc, zplane_nstart, zplane_nend, zplane_nskip
+use param, only : ws_plane_calc, ws_plane_nstart, ws_plane_nend, ws_plane_nskip
+use param, only : ws_inter_calc, ws_inter_nstart, ws_inter_nend
+use functions_bl, only : ws_inter
 implicit none
 
 ! Determine if we are to checkpoint intermediate times
@@ -675,6 +678,40 @@ if(zplane_calc) then
     end if
 end if
 
+!  Determine if wall stress top/bottom plane output is to be recorded
+if(ws_plane_calc) then
+    if (jt_total >= ws_plane_nstart .and. jt_total <= ws_plane_nend .and.          &
+        ( mod(jt_total-ws_plane_nstart,ws_plane_nskip)==0) ) then
+        if (jt_total == ws_plane_nstart) then
+            if (coord == 0) then
+                write(*,*) '-------------------------------'
+                write(*,"(1a,i9,1a,i9)")                                       &
+                    'Writing wall stress plane data from ',          &
+                    ws_plane_nstart, ' to ', ws_plane_nend
+                write(*,"(1a,i9)") 'Iteration skip:', ws_plane_nskip
+                write(*,*) '-------------------------------'
+            end if
+        end if
+        call inst_write(6)
+    end if
+end if
+
+!  Determine if reversed wall stress intermittency output is to be recorded
+if(ws_inter_calc .and. coord==0) then
+    if (jt_total >= ws_inter_nstart .and. jt_total <= ws_inter_nend) then
+        if (jt_total == ws_inter_nstart) then
+            if (coord == 0) then
+                write(*,*) '-------------------------------'
+                write(*,"(1a,i9,1a,i9)")                                       &
+                    'Writing reversed wall stress intermittency from ',        &
+                    ws_inter_nstart, ' to ', ws_inter_nend
+                write(*,*) '-------------------------------'
+            end if
+        end if
+        call ws_inter()
+    end if
+end if
+
 end subroutine output_loop
 
 !*******************************************************************************
@@ -689,6 +726,7 @@ subroutine inst_write(itype)
 !   x-planes : itype=3
 !   y-planes : itype=4
 !   z-planes : itype=5
+!   ws plane : itype=6
 !
 ! For the points and planar data, this subroutine writes using the
 ! locations specfied from the param module.
@@ -705,6 +743,7 @@ use param, only : write_endian
 use grid_m
 use sim_param, only : u, v, w, p
 use sim_param, only : dwdy, dwdx, dvdx, dudy
+use sim_param, only : txz, tyz
 use functions, only : interp_to_w_grid
 
 use stat_defs, only : xplane, yplane
@@ -1061,6 +1100,27 @@ elseif (itype==5) then
 #endif
     end do
     deallocate(ui,vi,wi)
+
+!  Write wall stress top/bottom plane values
+elseif (itype==6) then
+    !  bottom wall
+    if (coord == 0) then
+        call string_splice(fname, path // 'output/ws_bot_', jt_total, bin_ext)
+        open(unit=13,file=fname,form='unformatted',convert=write_endian,   &
+                        access='direct',recl=nx*ny*1*rprec)
+        write(13,rec=1) txz(1:nx,1:ny,1)
+        write(13,rec=2) tyz(1:nx,1:ny,1)
+        close(13)
+    !  top wall
+    elseif (coord == nproc-1) then
+        call string_splice(fname, path // 'output/ws_top_', jt_total, bin_ext)
+        open(unit=14,file=fname,form='unformatted',convert=write_endian,   &
+                        access='direct',recl=nx*ny*1*rprec)
+        write(14,rec=1) txz(1:nx,1:ny,nz)
+        write(14,rec=2) tyz(1:nx,1:ny,nz)
+        close(14)
+    endif
+
 else
     write(*,*) 'Error: itype not specified properly to inst_write!'
     stop
