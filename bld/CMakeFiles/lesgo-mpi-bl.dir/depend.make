@@ -58,6 +58,8 @@ CMakeFiles/lesgo-mpi-bl.dir/emul_complex.mod.stamp: CMakeFiles/lesgo-mpi-bl.dir/
 CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.o.provides.build:
 	$(CMAKE_COMMAND) -E touch CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.o.provides.build
 CMakeFiles/lesgo-mpi-bl.dir/build: CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.o.provides.build
+CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi-bl.dir/emul_complex.mod.stamp
+CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi-bl.dir/fft.mod.stamp
 CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi-bl.dir/param.mod.stamp
 CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi-bl.dir/sim_param.mod.stamp
 CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o: CMakeFiles/lesgo-mpi-bl.dir/test_filtermodule.mod.stamp
