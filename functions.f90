@@ -30,7 +30,7 @@ private
 public interp_to_uv_grid, trilinear_interp, trilinear_interp_w, binary_search, &
     bilinear_interp, linear_interp, cross_product, cell_indx, buff_indx,       &
     interp_to_w_grid, get_tau_wall_bot, get_tau_wall_top, count_lines, &
-    velocity_fit, retd_fit
+    velocity_fit, retd_fit, dealias_mult
 
 character (*), parameter :: mod_name = 'functions'
 
@@ -1009,5 +1009,40 @@ retd = kappa4*redelta**beta1*                            &
     (1._rprec + (kappa3*redelta)**-beta2)**((beta1-0.5_rprec)/beta2)
 
 end function retd_fit
+
+!*******************************************************************************
+function dealias_mult(f_in,g_in) result(fg_out)
+!*******************************************************************************
+! multiplies f and g with dealiasing
+
+use types, only : rprec
+use param, only : ld, ld_big, nx, nx2, ny, ny2
+use fft
+
+implicit none
+
+real(rprec), dimension(ld,ny), intent(in) :: f_in, g_in
+real(rprec), dimension(ld,ny) :: fg_out
+real(rprec), dimension(ld,ny) :: dummy1, dummy2
+real(rprec), dimension(ld_big,ny2) :: f_big, g_big, fg_big
+
+dummy1 = f_in/(nx*ny)
+dummy2 = g_in/(nx*ny)
+
+call dfftw_execute_dft_r2c(forw, dummy1, dummy1)
+call dfftw_execute_dft_r2c(forw, dummy2, dummy2)
+
+call padd(f_big,dummy1)
+call padd(g_big,dummy2)
+
+call dfftw_execute_dft_c2r(back_big, f_big, f_big)
+call dfftw_execute_dft_c2r(back_big, g_big, g_big)
+
+fg_big = f_big*g_big/(nx2*ny2)
+call dfftw_execute_dft_r2c(forw_big, fg_big, fg_big)
+call unpadd(fg_out,fg_big)
+call dfftw_execute_dft_c2r(back, fg_out, fg_out)
+
+end function dealias_mult
 
 end module functions

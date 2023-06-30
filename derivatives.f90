@@ -29,7 +29,7 @@ implicit none
 save
 private
 
-public ddx, ddy, ddxy, filt_da, ddz_uv, ddz_w
+public ddx, ddy, ddxy, ddxy_plane, filt_da, ddz_uv, ddz_w
 
 contains
 
@@ -161,6 +161,46 @@ do jz = lbz, nz
 end do
 
 end subroutine ddxy
+
+!*******************************************************************************
+subroutine ddxy_plane (f, dfdx, dfdy)
+!*******************************************************************************
+!
+! This subroutine computes the partial derivative of f with respect to
+! x and y using spectral decomposition. Done for single z-plane.
+!
+use types, only : rprec
+use param, only : ld, nx, ny
+use fft
+use emul_complex, only : OPERATOR(.MULI.)
+implicit none
+
+real(rprec), dimension(:,:), intent(in) :: f
+real(rprec), dimension(:,:), intent(inout) :: dfdx, dfdy
+real(rprec) :: const
+
+const = 1._rprec / ( nx * ny )
+
+! Use dfdy to hold f; since we are doing in place FFTs this is required
+dfdx = const*f
+call dfftw_execute_dft_r2c(forw, dfdx, dfdx)
+
+! Zero padded region and Nyquist frequency
+dfdx(ld-1:ld,:) = 0._rprec
+dfdx(:,ny/2+1) = 0._rprec
+
+! Derivatives: must to y's first here, because we're using dfdx as storage
+! Use complex emulation of dfdy to perform complex multiplication
+! Optimized version for real(eye*ky)=0
+! only passing imaginary part of eye*ky
+dfdy = dfdx .MULI. ky
+dfdx = dfdx .MULI. kx
+
+! Perform inverse transform to get pseudospectral derivative
+call dfftw_execute_dft_c2r(back, dfdx, dfdx)
+call dfftw_execute_dft_c2r(back, dfdy, dfdy)
+
+end subroutine ddxy_plane
 
 !*******************************************************************************
 subroutine filt_da(f,dfdx,dfdy, lbz)

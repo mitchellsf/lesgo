@@ -180,6 +180,30 @@ clocks.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/clocks.f90.s
 .PHONY : clocks.f90.s
 
+composite_wm.o: composite_wm.f90.o
+.PHONY : composite_wm.o
+
+# target to build an object file
+composite_wm.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.o
+.PHONY : composite_wm.f90.o
+
+composite_wm.i: composite_wm.f90.i
+.PHONY : composite_wm.i
+
+# target to preprocess a source file
+composite_wm.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.i
+.PHONY : composite_wm.f90.i
+
+composite_wm.s: composite_wm.f90.s
+.PHONY : composite_wm.s
+
+# target to generate assembly for a file
+composite_wm.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.s
+.PHONY : composite_wm.f90.s
+
 convec.o: convec.f90.o
 .PHONY : convec.o
 
@@ -323,30 +347,6 @@ emul_complex.s: emul_complex.f90.s
 emul_complex.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.s
 .PHONY : emul_complex.f90.s
-
-eqwm_smooth.o: eqwm_smooth.f90.o
-.PHONY : eqwm_smooth.o
-
-# target to build an object file
-eqwm_smooth.f90.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o
-.PHONY : eqwm_smooth.f90.o
-
-eqwm_smooth.i: eqwm_smooth.f90.i
-.PHONY : eqwm_smooth.i
-
-# target to preprocess a source file
-eqwm_smooth.f90.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.i
-.PHONY : eqwm_smooth.f90.i
-
-eqwm_smooth.s: eqwm_smooth.f90.s
-.PHONY : eqwm_smooth.s
-
-# target to generate assembly for a file
-eqwm_smooth.f90.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.s
-.PHONY : eqwm_smooth.f90.s
 
 fft.o: fft.f90.o
 .PHONY : fft.o
@@ -876,6 +876,30 @@ mpi_transpose_mod.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/mpi_transpose_mod.f90.s
 .PHONY : mpi_transpose_mod.f90.s
 
+neqwm.o: neqwm.f90.o
+.PHONY : neqwm.o
+
+# target to build an object file
+neqwm.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/neqwm.f90.o
+.PHONY : neqwm.f90.o
+
+neqwm.i: neqwm.f90.i
+.PHONY : neqwm.i
+
+# target to preprocess a source file
+neqwm.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/neqwm.f90.i
+.PHONY : neqwm.f90.i
+
+neqwm.s: neqwm.f90.s
+.PHONY : neqwm.s
+
+# target to generate assembly for a file
+neqwm.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/neqwm.f90.s
+.PHONY : neqwm.f90.s
+
 param.o: param.f90.o
 .PHONY : param.o
 
@@ -971,6 +995,30 @@ press_stag_array.s: press_stag_array.f90.s
 press_stag_array.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/press_stag_array.f90.s
 .PHONY : press_stag_array.f90.s
+
+qeqwm.o: qeqwm.f90.o
+.PHONY : qeqwm.o
+
+# target to build an object file
+qeqwm.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/qeqwm.f90.o
+.PHONY : qeqwm.f90.o
+
+qeqwm.i: qeqwm.f90.i
+.PHONY : qeqwm.i
+
+# target to preprocess a source file
+qeqwm.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/qeqwm.f90.i
+.PHONY : qeqwm.f90.i
+
+qeqwm.s: qeqwm.f90.s
+.PHONY : qeqwm.s
+
+# target to generate assembly for a file
+qeqwm.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/qeqwm.f90.s
+.PHONY : qeqwm.f90.s
 
 rescale_recycle.o: rescale_recycle.f90.o
 .PHONY : rescale_recycle.o
@@ -1395,6 +1443,9 @@ help:
 	@echo "... clocks.o"
 	@echo "... clocks.i"
 	@echo "... clocks.s"
+	@echo "... composite_wm.o"
+	@echo "... composite_wm.i"
+	@echo "... composite_wm.s"
 	@echo "... convec.o"
 	@echo "... convec.i"
 	@echo "... convec.s"
@@ -1413,9 +1464,6 @@ help:
 	@echo "... emul_complex.o"
 	@echo "... emul_complex.i"
 	@echo "... emul_complex.s"
-	@echo "... eqwm_smooth.o"
-	@echo "... eqwm_smooth.i"
-	@echo "... eqwm_smooth.s"
 	@echo "... fft.o"
 	@echo "... fft.i"
 	@echo "... fft.s"
@@ -1482,6 +1530,9 @@ help:
 	@echo "... mpi_transpose_mod.o"
 	@echo "... mpi_transpose_mod.i"
 	@echo "... mpi_transpose_mod.s"
+	@echo "... neqwm.o"
+	@echo "... neqwm.i"
+	@echo "... neqwm.s"
 	@echo "... param.o"
 	@echo "... param.i"
 	@echo "... param.s"
@@ -1494,6 +1545,9 @@ help:
 	@echo "... press_stag_array.o"
 	@echo "... press_stag_array.i"
 	@echo "... press_stag_array.s"
+	@echo "... qeqwm.o"
+	@echo "... qeqwm.i"
+	@echo "... qeqwm.s"
 	@echo "... rescale_recycle.o"
 	@echo "... rescale_recycle.i"
 	@echo "... rescale_recycle.s"

@@ -5,6 +5,8 @@ CMakeFiles/lesgo-mpi-bl.dir/cfl_util.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/cfl_util.f90
 CMakeFiles/lesgo-mpi-bl.dir/clocks.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/clocks.f90
+CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.o
+ /home/mfowle12/code/lesgo_mitchell/lesgo/composite_wm.f90
 CMakeFiles/lesgo-mpi-bl.dir/convec.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/convec.f90
 CMakeFiles/lesgo-mpi-bl.dir/coriolis.f90.o
@@ -17,8 +19,6 @@ CMakeFiles/lesgo-mpi-bl.dir/divstress_w.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/divstress_w.f90
 CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/emul_complex.f90
-CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o
- /home/mfowle12/code/lesgo_mitchell/lesgo/eqwm_smooth.f90
 CMakeFiles/lesgo-mpi-bl.dir/fft.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/fft.f90
  /data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/include/fftw3.f
@@ -64,6 +64,8 @@ CMakeFiles/lesgo-mpi-bl.dir/mpi_defs.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/mpi_defs.f90
 CMakeFiles/lesgo-mpi-bl.dir/mpi_transpose_mod.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/mpi_transpose_mod.f90
+CMakeFiles/lesgo-mpi-bl.dir/neqwm.f90.o
+ /home/mfowle12/code/lesgo_mitchell/lesgo/neqwm.f90
 CMakeFiles/lesgo-mpi-bl.dir/param.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/param.f90
 CMakeFiles/lesgo-mpi-bl.dir/param_output.f90.o
@@ -72,6 +74,8 @@ CMakeFiles/lesgo-mpi-bl.dir/pid.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/pid.f90
 CMakeFiles/lesgo-mpi-bl.dir/press_stag_array.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/press_stag_array.f90
+CMakeFiles/lesgo-mpi-bl.dir/qeqwm.f90.o
+ /home/mfowle12/code/lesgo_mitchell/lesgo/qeqwm.f90
 CMakeFiles/lesgo-mpi-bl.dir/rescale_recycle.f90.o
  /home/mfowle12/code/lesgo_mitchell/lesgo/rescale_recycle.f90
 CMakeFiles/lesgo-mpi-bl.dir/rescale_recycle_fluc.f90.o

@@ -178,6 +178,12 @@ logical :: inilag = .true.
 integer :: lbc_mom = 1
 integer :: ubc_mom = 0
 
+! Composite wall model settings
+integer :: qeq_case = 0
+logical :: velocity_correction_flag = .false.
+logical :: lamNEQ_flag = .false.
+logical :: turbNEQ_flag = .false.
+
 ! Point number away from the wall the wall model uses
 ! (only used for equilibrium smooth wall model)
 integer :: wmpt = 1

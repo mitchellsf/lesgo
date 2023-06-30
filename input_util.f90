@@ -453,6 +453,14 @@ do
                 Read (buff(equal_pos+1:), *) lbc_mom
             case ('UBC_MOM')
                 Read (buff(equal_pos+1:), *) ubc_mom
+            case ('QEQ_CASE')
+                read (buff(equal_pos+1:), *) qeq_case
+            case ('VELOCITY_CORRECTION_FLAG')
+                read (buff(equal_pos+1:), *) velocity_correction_flag
+            case ('LAMNEQ_FLAG')
+                read (buff(equal_pos+1:), *) lamNEQ_flag
+            case ('TURBNEQ_FLAG')
+                read (buff(equal_pos+1:), *) turbNEQ_flag
             case ('WMPT')
                 Read (buff(equal_pos+1:), *) wmpt
             case ('UBOT')
