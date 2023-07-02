@@ -18,16 +18,16 @@
 !!
 
 !*******************************************************************************
-module composite_wm
+module mts_wm
 !*******************************************************************************
 use types, only : rprec
 
 implicit none
 
 private
-public composite_initialize, composite_finalize, composite_wallstress_calc,&
-    composite_monitor, composite_monitor_plane, composite_write_checkpoint,&
-    composite_read_checkpoint, get_wallmodelstress,&
+public mts_initialize, mts_finalize, mts_wallstress_calc,&
+    mts_monitor, mts_monitor_plane, mts_write_checkpoint,&
+    mts_read_checkpoint, get_wallmodelstress,&
     twxbar, twybar, twxpp, twypp, twxpp_turb, twypp_turb
 
 ! wall stress from quasi-equilibrium and non-equilibrium models
@@ -61,7 +61,7 @@ real(rprec) :: PI=4*atan(1._rprec)
 contains
 
 !*******************************************************************************
-subroutine composite_initialize
+subroutine mts_initialize
 !*******************************************************************************
 use param, only : nx, ny, nz, dz, coord, mean_p_force_x, mean_p_force_y, &
     nu_molec, wmpt
@@ -158,10 +158,10 @@ twypp_turb = 0._rprec
 call qeqwm_initialize
 call neqwm_initialize
 
-end subroutine composite_initialize
+end subroutine mts_initialize
 
 !*******************************************************************************
-subroutine composite_finalize
+subroutine mts_finalize
 !*******************************************************************************
 
 use qeqwm, only : qeqwm_finalize
@@ -212,10 +212,10 @@ deallocate(utytemp)
 call qeqwm_finalize
 call neqwm_finalize
 
-end subroutine composite_finalize
+end subroutine mts_finalize
 
 !*******************************************************************************
-subroutine composite_wallstress_calc
+subroutine mts_wallstress_calc
 !*******************************************************************************
 
 use param, only : nx, ny, nz, dz, ld, nz, coord, dt, vonk, nu_molec, jt, &
@@ -475,7 +475,7 @@ end if
 !if (coord==0) then
 !i = int(nx/2._rprec)
 !j = int(ny/2._rprec)
-!fname = path // 'output/composite_monitor_point_extra.dat'
+!fname = path // 'output/mts_monitor_point_extra.dat'
 !open(newunit=fid, file=fname, status='unknown', position='append')
 !write(fid,*) jt_total,&
 !    total_time,&
@@ -498,7 +498,7 @@ end if
 !    write(*,*) jt, 'after:',txz(nx/2,ny/2,1)
 !endif
 
-end subroutine composite_wallstress_calc
+end subroutine mts_wallstress_calc
 
 !*******************************************************************************
 subroutine velocity_fit(Deltap,fu)
@@ -661,7 +661,7 @@ endif
 end subroutine get_wallmodelstress
 
 !*******************************************************************************
-subroutine composite_monitor
+subroutine mts_monitor
 !*******************************************************************************
 !
 ! This subroutine monitors the temporal evolution of neqwm quantities
@@ -678,7 +678,7 @@ character*50 :: fname
 i = int(nx/2._rprec)
 j = int(ny/2._rprec)
 
-fname = path // 'output/composite_monitor_point.dat'
+fname = path // 'output/mts_monitor_point.dat'
 open(newunit=fid, file=fname, status='unknown', position='append')
 write(fid,*) jt_total,&
     total_time,&
@@ -719,10 +719,10 @@ write(fid,*) jt_total,&
     dpdyppdelta(i,j)
 close(fid)
 
-end subroutine composite_monitor
+end subroutine mts_monitor
 
 !*******************************************************************************
-subroutine composite_monitor_plane
+subroutine mts_monitor_plane
 !*******************************************************************************
 !
 ! This subroutine monitors the temporal evolution of wm quantities (plane
@@ -736,7 +736,7 @@ implicit none
 integer :: fid
 character*50 :: fname
 
-fname = path // 'output/composite_monitor_plane.dat'
+fname = path // 'output/mts_monitor_plane.dat'
 open(newunit=fid, file=fname, status='unknown', position='append')
 write(fid,*) jt_total,&
     total_time,&
@@ -776,10 +776,10 @@ write(fid,*) jt_total,&
     sum(dpdyppdelta)/nx/ny
 close(fid)
 
-end subroutine composite_monitor_plane
+end subroutine mts_monitor_plane
 
 !*******************************************************************************
-subroutine composite_write_checkpoint
+subroutine mts_write_checkpoint
 !*******************************************************************************
 
 use param, only : nx, ny, coord, nproc, write_endian
@@ -792,7 +792,7 @@ implicit none
 integer :: fid1, fid2
 
 if (coord==0) then
-    open(newunit=fid1, file='composite_checkPoint_bot.bin', convert=write_endian,&
+    open(newunit=fid1, file='mts_checkPoint_bot.bin', convert=write_endian,&
         form='unformatted', access='direct', recl=nx*ny*rprec)
     write(fid1,rec=1) twxbar(1:nx,1:ny)
     write(fid1,rec=2) twybar(1:nx,1:ny)
@@ -821,7 +821,7 @@ if (coord==0) then
     write(fid1,rec=25) dpdyppdelta(1:nx,1:ny)
     close(fid1)
 else
-    open(newunit=fid2, file='composite_checkPoint_top.bin', convert=write_endian,&
+    open(newunit=fid2, file='mts_checkPoint_top.bin', convert=write_endian,&
         form='unformatted', access='direct', recl=nx*ny*rprec)
     write(fid2,rec=1) twxbar(1:nx,1:ny)
     write(fid2,rec=2) twybar(1:nx,1:ny)
@@ -854,10 +854,10 @@ end if
 call qeqwm_write_checkpoint
 call neqwm_write_I_checkpoint
 
-end subroutine composite_write_checkpoint
+end subroutine mts_write_checkpoint
 
 !*******************************************************************************
-subroutine composite_read_checkpoint
+subroutine mts_read_checkpoint
 !*******************************************************************************
 
 use param, only : nx, ny, coord, nproc, read_endian, lbc_mom, ubc_mom
@@ -871,7 +871,7 @@ integer :: fid1, fid2
 logical :: file_flag
 
 if (coord==0) then
-    open(newunit=fid1, file='composite_checkPoint_bot.bin', convert=read_endian,&
+    open(newunit=fid1, file='mts_checkPoint_bot.bin', convert=read_endian,&
         form='unformatted', access='direct', recl=nx*ny*rprec)
     read(fid1,rec=1) twxbar(1:nx,1:ny)
     read(fid1,rec=2) twybar(1:nx,1:ny)
@@ -900,7 +900,7 @@ if (coord==0) then
     read(fid1,rec=25) dpdyppdelta(1:nx,1:ny)
     close(fid1)
 else if (coord==nproc-1) then
-    open(newunit=fid2, file='composite_checkPoint_top.bin', convert=read_endian,&
+    open(newunit=fid2, file='mts_checkPoint_top.bin', convert=read_endian,&
         form='unformatted', access='direct', recl=nx*ny*rprec)
     read(fid2,rec=1) twxbar(1:nx,1:ny)
     read(fid2,rec=2) twybar(1:nx,1:ny)
@@ -954,7 +954,7 @@ else
     end if
 endif
 
-end subroutine composite_read_checkpoint
+end subroutine mts_read_checkpoint
 
 !*******************************************************************************
 subroutine debug_wm
@@ -1035,5 +1035,5 @@ close(fid)
 
 end subroutine write_velocity_pt1_pt2
 
-end module composite_wm
+end module mts_wm
 
