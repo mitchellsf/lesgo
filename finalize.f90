@@ -24,8 +24,9 @@ subroutine finalize()
 ! This subroutine is called by the main program. It is a driver subroutine for
 ! calling all the finalize routines of the various lesgo modules.
 !
-use param, only : coord, lbc_mom
+use param, only : coord, lbc_mom, ubc_mom, nproc
 use iwmles, only : iwm_finalize
+use composite_wm, only : composite_finalize
 #ifdef PPMPI
 use param, only : MPI_COMM_WORLD, ierr
 #endif
@@ -49,6 +50,14 @@ call turbines_finalize ()   ! must come before MPI finalize
 ! Integral wall model:
 if (lbc_mom == 3) then
     if (coord==0) call iwm_finalize()
+endif
+
+! Relaxation wall model:
+if (lbc_mom == 4 .and. coord==0) then
+    call composite_finalize()
+endif
+if (ubc_mom == 4 .and. coord==nproc-1) then
+    call composite_finalize()
 endif
 
 ! Actuator Turbine Model:

@@ -29,7 +29,8 @@ use param, only : path
 use param, only : USE_MPI, coord, dt, jt_total, nsteps
 use param, only : use_cfl_dt, cfl, cfl_f, dt_dim, z_i, u_star
 use iwmles
-use param, only : lbc_mom
+use composite_wm, only : composite_initialize
+use param, only : lbc_mom, ubc_mom, nproc
 use sponge
 #ifdef PPMPI
 use param, only : MPI_COMM_WORLD, ierr
@@ -175,13 +176,27 @@ call init_fft()
 ! this is used for lower BC, even if no dynamic model
 call test_filter_init( )
 
-! Initialize velocity field
-call initial()
-
 ! Initialize integral wall model xiang
 if (lbc_mom == 3) then
     if (coord==0) call iwm_init()
 endif
+
+! Initialize composite wall model
+if (lbc_mom==4) then
+    if (coord==0) then
+        call composite_initialize()
+        write(*,*) 'initializing composite_wm bottom'
+    end if
+endif
+if (ubc_mom==4) then
+    if (coord==nproc-1) then
+        call composite_initialize()
+        write(*,*) 'initializing composite_wm top'
+    end if
+endif
+
+! Initialize velocity field
+call initial()
 
 ! Initialize concurrent precursor stuff
 #if defined(PPMPI) && defined(PPCPS)

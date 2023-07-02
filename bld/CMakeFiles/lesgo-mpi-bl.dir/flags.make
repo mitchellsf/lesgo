@@ -6,5 +6,5 @@ Fortran_DEFINES = -DPPBL -DPPMPI
 
 Fortran_INCLUDES = -I/usr/local/include -I/usr/include -I/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/include
 
-Fortran_FLAGS =  -cpp -O0 -g -traceback -no-wrap-margin -assume byterecl
+Fortran_FLAGS =  -cpp -O3 -funroll-loops -no-wrap-margin -assume byterecl
 

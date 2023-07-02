@@ -1,0 +1,103 @@
+composite_wm:CMakeLists.txt[36m:[m     iwmles.f90 [1;31mcomposite[m_wm.f90 qeqwm.f90 neqwm.f90)
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/DependInfo.cmake[36m:[m  "/home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90" "/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/flags.make
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: /home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mfowle12/code/lesgo_mitchell/lesgo/bld/CMakeFiles --progress-num=$(CMAKE_PROGRESS_47) "Building Fortran object CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -c /home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90 -o CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.i: cmake_force
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing Fortran source to CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.i"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -E /home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90 > CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.i
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.s: cmake_force
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling Fortran source to assembly CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.s"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m	mpif90 $(Fortran_DEFINES) $(Fortran_INCLUDES) $(Fortran_FLAGS) -S /home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90 -o CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.s
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[m"CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o" \
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/build.make[36m:[mlesgo-mpi-bl: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/cmake_clean.cmake[36m:[m  "CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/cmake_clean_Fortran.cmake[36m:[m  "[1;31mcomposite[m_wm.mod"
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/cmake_clean_Fortran.cmake[36m:[m  "CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp"
+Binary file composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.o matches
+Binary file composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/composite_wm.mod.stamp matches
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.internal[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.internal[36m:[m /home/mfowle12/code/lesgo_mitchell/lesgo/[1;31mcomposite[m_wm.f90
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/derivatives.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/fft.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/neqwm.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/param.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/qeqwm.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/sim_param.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/string_util.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/test_filtermodule.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o: CMakeFiles/lesgo-mpi-bl.dir/types.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o.provides.build: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[m	$(CMAKE_COMMAND) -E cmake_copy_f90_mod [1;31mcomposite[m_wm.mod CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp Intel
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o.provides.build:
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[m	$(CMAKE_COMMAND) -E touch CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o.provides.build
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/build: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o.provides.build
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/initial.f90.o: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/depend.make[36m:[mCMakeFiles/lesgo-mpi-bl.dir/wallstress.f90.o: CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.mod.stamp
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/fortran.internal[36m:[m [1;31mcomposite[m_wm.mod
+Binary file composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/initial.f90.o matches
+composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/link.txt[36m:[mmpif90  -cpp -O0 -g -traceback -no-wrap-margin -assume byterecl "CMakeFiles/lesgo-mpi-bl.dir/cfl_util.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/clocks.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/convec.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/coriolis.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/derivatives.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/divstress_uv.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/divstress_w.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/fft.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/finalize.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/forcing.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/fringe.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/functions.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/grid.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/inflow.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/initial.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/initialize.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/input_util.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/interpolag_Sdep.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/interpolag_Ssim.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/io.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/lagrange_Sdep.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/lagrange_Ssim.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/main.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/messages.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/param.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/param_output.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/pid.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/press_stag_array.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/rmsdiv.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/scaledep_dynamic.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/shifted_inflow.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/sgs_param.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/sgs_stag_util.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/sim_param.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/sponge.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/stat_defs.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/std_dynamic.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/string_util.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/test_filtermodule.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/tridag_array.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/time_average.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/types.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/wallstress.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/init_random_seed.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/iwmles.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/qeqwm.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/neqwm.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/mpi_transpose_mod.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/mpi_defs.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/rescale_recycle.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/rescale_recycle_fluc.f90.o" "CMakeFiles/lesgo-mpi-bl.dir/functions_bl.f90.o" -o lesgo-mpi-bl   -L/usr/local/lib  -L/home/mfowle12/lib  -L/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/lib  -Wl,-rpath,/usr/local/lib:/home/mfowle12/lib:/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/fftw-3.3.8-wxxony3sfn4vctui2jomkwlzs6jfnvqr/lib -lfftw3 
+Binary file composite_wm:bld/CMakeFiles/lesgo-mpi-bl.dir/wallstress.f90.o matches
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.o: [1;31mcomposite[m_wm.f90.o
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.o
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.f90.o:
+composite_wm:bld/Makefile[36m:[m	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.o
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.f90.o
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.i: [1;31mcomposite[m_wm.f90.i
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.i
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.f90.i:
+composite_wm:bld/Makefile[36m:[m	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.i
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.f90.i
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.s: [1;31mcomposite[m_wm.f90.s
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.s
+composite_wm:bld/Makefile[36m:[m[1;31mcomposite[m_wm.f90.s:
+composite_wm:bld/Makefile[36m:[m	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/[1;31mcomposite[m_wm.f90.s
+composite_wm:bld/Makefile[36m:[m.PHONY : [1;31mcomposite[m_wm.f90.s
+composite_wm:bld/Makefile[36m:[m	@echo "... [1;31mcomposite[m_wm.o"
+composite_wm:bld/Makefile[36m:[m	@echo "... [1;31mcomposite[m_wm.i"
+composite_wm:bld/Makefile[36m:[m	@echo "... [1;31mcomposite[m_wm.s"
+Binary file composite_wm:bld/composite_wm.mod matches
+Binary file composite_wm:bld/lesgo-mpi-bl matches
+composite_wm:composite_wm.f90[36m:[mmodule [1;31mcomposite[m_wm
+composite_wm:composite_wm.f90[36m:[mpublic [1;31mcomposite[m_initialize, [1;31mcomposite[m_finalize, [1;31mcomposite[m_wallstress_calc,&
+composite_wm:composite_wm.f90[36m:[m    [1;31mcomposite[m_monitor, [1;31mcomposite[m_monitor_plane, [1;31mcomposite[m_write_checkpoint,&
+composite_wm:composite_wm.f90[36m:[m    [1;31mcomposite[m_read_checkpoint, get_wallmodelstress,&
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_initialize
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_initialize
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_finalize
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_finalize
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_wallstress_calc
+composite_wm:composite_wm.f90[36m:[m!fname = path // 'output/[1;31mcomposite[m_monitor_point_extra.dat'
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_wallstress_calc
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_monitor
+composite_wm:composite_wm.f90[36m:[mfname = path // 'output/[1;31mcomposite[m_monitor_point.dat'
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_monitor
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_monitor_plane
+composite_wm:composite_wm.f90[36m:[mfname = path // 'output/[1;31mcomposite[m_monitor_plane.dat'
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_monitor_plane
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_write_checkpoint
+composite_wm:composite_wm.f90[36m:[m    open(newunit=fid1, file='[1;31mcomposite[m_checkPoint_bot.bin', convert=write_endian,&
+composite_wm:composite_wm.f90[36m:[m    open(newunit=fid2, file='[1;31mcomposite[m_checkPoint_top.bin', convert=write_endian,&
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_write_checkpoint
+composite_wm:composite_wm.f90[36m:[msubroutine [1;31mcomposite[m_read_checkpoint
+composite_wm:composite_wm.f90[36m:[m    open(newunit=fid1, file='[1;31mcomposite[m_checkPoint_bot.bin', convert=read_endian,&
+composite_wm:composite_wm.f90[36m:[m    open(newunit=fid2, file='[1;31mcomposite[m_checkPoint_top.bin', convert=read_endian,&
+composite_wm:composite_wm.f90[36m:[mend subroutine [1;31mcomposite[m_read_checkpoint
+composite_wm:composite_wm.f90[36m:[mend module [1;31mcomposite[m_wm
+composite_wm:initial.f90[36m:[muse [1;31mcomposite[m_wm
+composite_wm:initial.f90[36m:[mlogical :: [1;31mcomposite[m_wm_file_flag
+composite_wm:initial.f90[36m:[m    inquire (file='[1;31mcomposite[m_checkPoint_bot.bin', exist=[1;31mcomposite[m_wm_file_flag)
+composite_wm:initial.f90[36m:[m    if ([1;31mcomposite[m_wm_file_flag .and. lbc_mom==4) then
+composite_wm:initial.f90[36m:[m        call [1;31mcomposite[m_read_checkPoint()
+composite_wm:initial.f90[36m:[m        write(*,*) 'reading [1;31mcomposite[m_checkpoint_bot'
+composite_wm:initial.f90[36m:[m    inquire (file='[1;31mcomposite[m_checkPoint_top.bin', exist=[1;31mcomposite[m_wm_file_flag)
+composite_wm:initial.f90[36m:[m    if ([1;31mcomposite[m_wm_file_flag .and. ubc_mom==4) then
+composite_wm:initial.f90[36m:[m        call [1;31mcomposite[m_read_checkPoint()
+composite_wm:initial.f90[36m:[m        write(*,*) 'reading [1;31mcomposite[m_checkpoint_top'
+Binary file composite_wm:lesgo-mpi-bl matches
+composite_wm:lesgo.conf[36m:[m  ! 4 - [1;31mcomposite[m wall model
+composite_wm:wallstress.f90[36m:[muse [1;31mcomposite[m_wm, only : [1;31mcomposite[m_wallstress_calc
+composite_wm:wallstress.f90[36m:[m            call [1;31mcomposite[m_wallstress_calc
+composite_wm:wallstress.f90[36m:[m            call [1;31mcomposite[m_wallstress_calc
