@@ -21,7 +21,7 @@
 subroutine initial()
 !*******************************************************************************
 use iwmles
-use composite_wm
+use mts_wm
 use types,only:rprec
 use param
 use sim_param, only : u, v, w, RHSx, RHSy, RHSz
@@ -64,7 +64,7 @@ integer::jz
 logical :: file_flag
 logical :: interp_flag
 logical :: iwm_file_flag !xiang: for iwm restart
-logical :: composite_wm_file_flag
+logical :: mts_wm_file_flag
 
 #ifdef PPTURBINES
 fxa = 0._rprec
@@ -107,16 +107,16 @@ end if
 
 ! check neqwm restart file
 if (coord==0) then
-    inquire (file='composite_checkPoint_bot.bin', exist=composite_wm_file_flag)
-    if (composite_wm_file_flag .and. lbc_mom==4) then
-        call composite_read_checkPoint()
-        write(*,*) 'reading composite_checkpoint_bot'
+    inquire (file='mts_checkPoint_bot.bin', exist=mts_wm_file_flag)
+    if (mts_wm_file_flag .and. lbc_mom==4) then
+        call mts_read_checkPoint()
+        write(*,*) 'reading mts_checkpoint_bot'
     end if
 else if (coord==nproc-1) then
-    inquire (file='composite_checkPoint_top.bin', exist=composite_wm_file_flag)
-    if (composite_wm_file_flag .and. ubc_mom==4) then
-        call composite_read_checkPoint()
-        write(*,*) 'reading composite_checkpoint_top'
+    inquire (file='mts_checkPoint_top.bin', exist=mts_wm_file_flag)
+    if (mts_wm_file_flag .and. ubc_mom==4) then
+        call mts_read_checkPoint()
+        write(*,*) 'reading mts_checkpoint_top'
     end if
 end if
 

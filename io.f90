@@ -1233,7 +1233,7 @@ end subroutine inst_write
 subroutine checkpoint ()
 !*******************************************************************************
 use iwmles
-use composite_wm
+use mts_wm
 use param, only : nz, checkpoint_file, tavg_calc, lbc_mom, L_x, L_y, L_z, path,&
     ubc_mom
 #ifdef PPMPI
@@ -1304,11 +1304,11 @@ if(lbc_mom==3)then
     if (coord == 0) call iwm_checkPoint()
 end if
 
-!checkpoint for composite wall model
+!checkpoint for mts wall model
 if(lbc_mom==4 .and. coord==0 )then
-    call composite_write_checkPoint()
+    call mts_write_checkPoint()
 else if (ubc_mom==4 .and. coord==nproc-1) then
-    call composite_write_checkPoint()
+    call mts_write_checkPoint()
 end if
 
 #ifdef PPHIT

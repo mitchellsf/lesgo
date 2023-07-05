@@ -29,7 +29,7 @@ use param, only : path
 use param, only : USE_MPI, coord, dt, jt_total, nsteps
 use param, only : use_cfl_dt, cfl, cfl_f, dt_dim, z_i, u_star
 use iwmles
-use composite_wm, only : composite_initialize
+use mts_wm, only : mts_initialize
 use param, only : lbc_mom, ubc_mom, nproc
 use sponge
 #ifdef PPMPI
@@ -181,17 +181,17 @@ if (lbc_mom == 3) then
     if (coord==0) call iwm_init()
 endif
 
-! Initialize composite wall model
+! Initialize mts wall model
 if (lbc_mom==4) then
     if (coord==0) then
-        call composite_initialize()
-        write(*,*) 'initializing composite_wm bottom'
+        call mts_initialize()
+        write(*,*) 'initializing mts_wm bottom'
     end if
 endif
 if (ubc_mom==4) then
     if (coord==nproc-1) then
-        call composite_initialize()
-        write(*,*) 'initializing composite_wm top'
+        call mts_initialize()
+        write(*,*) 'initializing mts_wm top'
     end if
 endif
 
