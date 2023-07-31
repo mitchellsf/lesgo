@@ -83,8 +83,8 @@ dplesdx(1:nx,1:ny) = dplesdx(1:nx,1:ny) - dkedx(1:nx,1:ny) &
 dplesdy(1:nx,1:ny) = dplesdy(1:nx,1:ny) - dkedy(1:nx,1:ny) &
     - mean_p_force_y
 
-call test_filter(Ules)
-call test_filter(Vles)
+!call test_filter(Ules)
+!call test_filter(Vles)
 !Ules = sum(Ules(1:nx,1:ny))/nx/ny
 !Vles = sum(Vles(1:nx,1:ny))/nx/ny
 Us = sqrt(Ules(1:nx,1:ny)**2+Vles(1:nx,1:ny)**2)
@@ -122,6 +122,9 @@ end if
 !if ( mod(jt_total,1)==0 ) then
 !    call eqwm_monitor()
 !end if
+
+!write(*,*) 'eqwm2: ',jt_total, sum(twx)/nx/ny, sum(twy)/nx/ny
+!write(*,*) 'eqwm_smooth: ',jt_total, dplesdx(1,1), dplesdy(1,1), psi_p(1,1)
 
 end subroutine eqwm_calc
 

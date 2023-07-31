@@ -71,7 +71,7 @@ CMAKE_BINARY_DIR = /home/mfowle12/code/lesgo_mitchell/lesgo/bld
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	/data/apps/linux-centos8-cascadelake/intel-19.1.2.254/cmake-3.18.4-vnclgi4r3epzyihf2bqezuvvvcpcgz5f/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	/data/apps/extern/spack_on/gcc/9.3.0/cmake/3.24.2-6eiclpht5l7mdnbqhvkqbirrhfhe5fy6/bin/ccmake -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -179,30 +179,6 @@ clocks.s: clocks.f90.s
 clocks.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/clocks.f90.s
 .PHONY : clocks.f90.s
-
-composite_wm.o: composite_wm.f90.o
-.PHONY : composite_wm.o
-
-# target to build an object file
-composite_wm.f90.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.o
-.PHONY : composite_wm.f90.o
-
-composite_wm.i: composite_wm.f90.i
-.PHONY : composite_wm.i
-
-# target to preprocess a source file
-composite_wm.f90.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.i
-.PHONY : composite_wm.f90.i
-
-composite_wm.s: composite_wm.f90.s
-.PHONY : composite_wm.s
-
-# target to generate assembly for a file
-composite_wm.f90.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/composite_wm.f90.s
-.PHONY : composite_wm.f90.s
 
 convec.o: convec.f90.o
 .PHONY : convec.o
@@ -347,6 +323,30 @@ emul_complex.s: emul_complex.f90.s
 emul_complex.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/emul_complex.f90.s
 .PHONY : emul_complex.f90.s
+
+eqwm_smooth.o: eqwm_smooth.f90.o
+.PHONY : eqwm_smooth.o
+
+# target to build an object file
+eqwm_smooth.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.o
+.PHONY : eqwm_smooth.f90.o
+
+eqwm_smooth.i: eqwm_smooth.f90.i
+.PHONY : eqwm_smooth.i
+
+# target to preprocess a source file
+eqwm_smooth.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.i
+.PHONY : eqwm_smooth.f90.i
+
+eqwm_smooth.s: eqwm_smooth.f90.s
+.PHONY : eqwm_smooth.s
+
+# target to generate assembly for a file
+eqwm_smooth.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.f90.s
+.PHONY : eqwm_smooth.f90.s
 
 fft.o: fft.f90.o
 .PHONY : fft.o
@@ -875,6 +875,30 @@ mpi_transpose_mod.s: mpi_transpose_mod.f90.s
 mpi_transpose_mod.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/mpi_transpose_mod.f90.s
 .PHONY : mpi_transpose_mod.f90.s
+
+mts_wm.o: mts_wm.f90.o
+.PHONY : mts_wm.o
+
+# target to build an object file
+mts_wm.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/mts_wm.f90.o
+.PHONY : mts_wm.f90.o
+
+mts_wm.i: mts_wm.f90.i
+.PHONY : mts_wm.i
+
+# target to preprocess a source file
+mts_wm.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/mts_wm.f90.i
+.PHONY : mts_wm.f90.i
+
+mts_wm.s: mts_wm.f90.s
+.PHONY : mts_wm.s
+
+# target to generate assembly for a file
+mts_wm.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/mts_wm.f90.s
+.PHONY : mts_wm.f90.s
 
 neqwm.o: neqwm.f90.o
 .PHONY : neqwm.o
@@ -1428,6 +1452,30 @@ wallstress.f90.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/wallstress.f90.s
 .PHONY : wallstress.f90.s
 
+wm_param.o: wm_param.f90.o
+.PHONY : wm_param.o
+
+# target to build an object file
+wm_param.f90.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/wm_param.f90.o
+.PHONY : wm_param.f90.o
+
+wm_param.i: wm_param.f90.i
+.PHONY : wm_param.i
+
+# target to preprocess a source file
+wm_param.f90.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/wm_param.f90.i
+.PHONY : wm_param.f90.i
+
+wm_param.s: wm_param.f90.s
+.PHONY : wm_param.s
+
+# target to generate assembly for a file
+wm_param.f90.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/lesgo-mpi-bl.dir/build.make CMakeFiles/lesgo-mpi-bl.dir/wm_param.f90.s
+.PHONY : wm_param.f90.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1443,9 +1491,6 @@ help:
 	@echo "... clocks.o"
 	@echo "... clocks.i"
 	@echo "... clocks.s"
-	@echo "... composite_wm.o"
-	@echo "... composite_wm.i"
-	@echo "... composite_wm.s"
 	@echo "... convec.o"
 	@echo "... convec.i"
 	@echo "... convec.s"
@@ -1464,6 +1509,9 @@ help:
 	@echo "... emul_complex.o"
 	@echo "... emul_complex.i"
 	@echo "... emul_complex.s"
+	@echo "... eqwm_smooth.o"
+	@echo "... eqwm_smooth.i"
+	@echo "... eqwm_smooth.s"
 	@echo "... fft.o"
 	@echo "... fft.i"
 	@echo "... fft.s"
@@ -1530,6 +1578,9 @@ help:
 	@echo "... mpi_transpose_mod.o"
 	@echo "... mpi_transpose_mod.i"
 	@echo "... mpi_transpose_mod.s"
+	@echo "... mts_wm.o"
+	@echo "... mts_wm.i"
+	@echo "... mts_wm.s"
 	@echo "... neqwm.o"
 	@echo "... neqwm.i"
 	@echo "... neqwm.s"
@@ -1599,6 +1650,9 @@ help:
 	@echo "... wallstress.o"
 	@echo "... wallstress.i"
 	@echo "... wallstress.s"
+	@echo "... wm_param.o"
+	@echo "... wm_param.i"
+	@echo "... wm_param.s"
 .PHONY : help
 
 

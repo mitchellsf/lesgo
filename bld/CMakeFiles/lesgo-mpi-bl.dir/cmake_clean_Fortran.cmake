@@ -8,10 +8,6 @@ FILE(REMOVE
   "CLOCK_M.mod"
   "CMakeFiles/lesgo-mpi-bl.dir/clock_m.mod.stamp"
 
-  "composite_wm.mod"
-  "COMPOSITE_WM.mod"
-  "CMakeFiles/lesgo-mpi-bl.dir/composite_wm.mod.stamp"
-
   "coriolis.mod"
   "CORIOLIS.mod"
   "CMakeFiles/lesgo-mpi-bl.dir/coriolis.mod.stamp"
@@ -23,6 +19,10 @@ FILE(REMOVE
   "emul_complex.mod"
   "EMUL_COMPLEX.mod"
   "CMakeFiles/lesgo-mpi-bl.dir/emul_complex.mod.stamp"
+
+  "eqwm_smooth.mod"
+  "EQWM_SMOOTH.mod"
+  "CMakeFiles/lesgo-mpi-bl.dir/eqwm_smooth.mod.stamp"
 
   "fft.mod"
   "FFT.mod"
@@ -75,6 +75,10 @@ FILE(REMOVE
   "mpi_transpose_mod.mod"
   "MPI_TRANSPOSE_MOD.mod"
   "CMakeFiles/lesgo-mpi-bl.dir/mpi_transpose_mod.mod.stamp"
+
+  "mts_wm.mod"
+  "MTS_WM.mod"
+  "CMakeFiles/lesgo-mpi-bl.dir/mts_wm.mod.stamp"
 
   "neqwm.mod"
   "NEQWM.mod"
@@ -139,4 +143,8 @@ FILE(REMOVE
   "types.mod"
   "TYPES.mod"
   "CMakeFiles/lesgo-mpi-bl.dir/types.mod.stamp"
+
+  "wm_param.mod"
+  "WM_PARAM.mod"
+  "CMakeFiles/lesgo-mpi-bl.dir/wm_param.mod.stamp"
   )

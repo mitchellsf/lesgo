@@ -21,42 +21,44 @@
 module mts_wm
 !*******************************************************************************
 use types, only : rprec
+use wm_param
 
 implicit none
 
 private
 public mts_initialize, mts_finalize, mts_wallstress_calc,&
     mts_monitor, mts_monitor_plane, mts_write_checkpoint,&
-    mts_read_checkpoint, get_wallmodelstress,&
-    twxbar, twybar, twxpp, twypp, twxpp_turb, twypp_turb
+    mts_read_checkpoint, get_wallmodelstress
+!    twxbar, twybar, twxpp, twypp, twxpp_turb, twypp_turb,&
+!    ubar, vbar, ls, Deltay
 
-! wall stress from quasi-equilibrium and non-equilibrium models
-real(rprec), dimension(:,:), allocatable :: twxbar, twybar, twxpp, twypp,&
-    twxpp_turb,twypp_turb
-! velocities at first grid point (non-filtered)
-real(rprec), dimension(:,:), allocatable :: uinst, vinst, Ud
-! velocity angle(measured from x-axis): d = Deltay
-real(rprec), dimension(:,:), allocatable :: theta_d
-! pressure gradients at first grid point
-real(rprec), dimension(:,:), allocatable :: dplesdx, dplesdy, dpdxbar1, dpdybar1,&
-    dpdxbar2, dpdybar2, dpdxpp, dpdypp, dpdxpp_m, dpdypp_m, dpdxpp_mm, dpdypp_mm
-! wall model height
-real(rprec) :: Deltay
-! temporary files for debug_wm
-real(rprec), dimension(:,:,:), allocatable :: utemp2,vtemp2,dpdxtemp,dpdytemp,&
-    utxtemp, utytemp
-! time scale for filtering the pressure
-real(rprec), dimension(:,:), allocatable :: Tnu
-! filtered LES velocity
-real(rprec), dimension(:,:), allocatable :: ubar, vbar
-real(rprec), dimension(:,:), allocatable :: uinf, vinf
-real(rprec), dimension(:,:), allocatable :: uinf_lam, vinf_lam
-real(rprec), dimension(:,:), allocatable :: Tdelta
-real(rprec), dimension(:,:), allocatable :: dpdxbar3,dpdybar3
-real(rprec), dimension(:,:), allocatable :: dpdxppdelta,dpdyppdelta
-real(rprec) :: ls=12._rprec ! thickness of Stokes layer in inner units
-
-real(rprec) :: PI=4*atan(1._rprec)
+!! wall stress from quasi-equilibrium and non-equilibrium models
+!real(rprec), dimension(:,:), allocatable :: twxbar, twybar, twxpp, twypp,&
+!    twxpp_turb,twypp_turb
+!! velocities at first grid point (non-filtered)
+!real(rprec), dimension(:,:), allocatable :: uinst, vinst, Ud
+!! velocity angle(measured from x-axis): d = Deltay
+!real(rprec), dimension(:,:), allocatable :: theta_d
+!! pressure gradients at first grid point
+!real(rprec), dimension(:,:), allocatable :: dplesdx, dplesdy, dpdxbar1, dpdybar1,&
+!    dpdxbar2, dpdybar2, dpdxpp, dpdypp, dpdxpp_m, dpdypp_m, dpdxpp_mm, dpdypp_mm
+!! wall model height
+!real(rprec) :: Deltay
+!! temporary files for debug_wm
+!real(rprec), dimension(:,:,:), allocatable :: utemp2,vtemp2,dpdxtemp,dpdytemp,&
+!    utxtemp, utytemp
+!! time scale for filtering the pressure
+!real(rprec), dimension(:,:), allocatable :: Tnu
+!! filtered LES velocity
+!real(rprec), dimension(:,:), allocatable :: ubar, vbar
+!real(rprec), dimension(:,:), allocatable :: uinf, vinf
+!real(rprec), dimension(:,:), allocatable :: uinf_lam, vinf_lam
+!real(rprec), dimension(:,:), allocatable :: Tdelta
+!real(rprec), dimension(:,:), allocatable :: dpdxbar3,dpdybar3
+!real(rprec), dimension(:,:), allocatable :: dpdxppdelta,dpdyppdelta
+!real(rprec) :: ls=12._rprec ! thickness of Stokes layer in inner units
+!
+!real(rprec) :: PI=4*atan(1._rprec)
 
 contains
 
@@ -105,6 +107,12 @@ allocate(dpdxbar3(nx,ny))
 allocate(dpdybar3(nx,ny))
 allocate(dpdxppdelta(nx,ny))
 allocate(dpdyppdelta(nx,ny))
+allocate(dpdx_fit(nx,ny))
+allocate(dpdy_fit(nx,ny))
+allocate(twx_eq(nx,ny))
+allocate(twy_eq(nx,ny))
+allocate(redelta(nx,ny))
+allocate(psi_p(nx,ny))
 
 allocate(utemp2(nx,ny,1000))
 allocate(vtemp2(nx,ny,1000))
@@ -116,6 +124,9 @@ allocate(utytemp(nx,ny,1000))
 ! provide initial values
 twxbar = mean_p_force_x
 twybar = mean_p_force_y
+twx_eq = twxbar
+twy_eq = twybar 
+
 twxpp = 0._rprec
 twypp = 0._rprec
 if (coord==0) then
@@ -134,6 +145,8 @@ dpdxbar1 = dplesdx
 dpdybar1 = dplesdy
 dpdxbar2 = dplesdx
 dpdybar2 = dplesdy
+dpdx_fit = dplesdx
+dpdy_fit = dplesdy
 dpdxpp = 0._rprec
 dpdypp = 0._rprec
 dpdxpp_m = 0._rprec
@@ -154,6 +167,8 @@ dpdxppdelta = 0._rprec
 dpdyppdelta = 0._rprec
 twxpp_turb = 0._rprec
 twypp_turb = 0._rprec
+redelta = Ud*Deltay/nu_molec
+psi_p = dplesdx*Deltay**3.0/nu_molec**2.0
 
 call qeqwm_initialize
 call neqwm_initialize
@@ -201,6 +216,10 @@ deallocate(dpdxbar3)
 deallocate(dpdybar3)
 deallocate(dpdxppdelta)
 deallocate(dpdyppdelta)
+deallocate(dpdx_fit)
+deallocate(dpdy_fit)
+deallocate(twx_eq)
+deallocate(twy_eq)
 
 deallocate(utemp2)
 deallocate(vtemp2)
@@ -221,9 +240,11 @@ subroutine mts_wallstress_calc
 use param, only : nx, ny, nz, dz, ld, nz, coord, dt, vonk, nu_molec, jt, &
     mean_p_force_x, mean_p_force_y, nu_molec, wmpt, path
 use param, only : jt_total, total_time
+use param, only : qeq_case, lamNEQ_flag, turbNEQ_flag, velocity_correction_flag
 use sim_param, only : u, v, w, dpdx, dpdy, txz, tyz, dudz, dvdz
-use qeqwm, only : lagrangian_rewm, eqwm_compute, utau, utx, uty, Ts, utau_filt
-use neqwm, only : neq_laminar_calc
+use qeqwm, only : lagrangian_rewm, eqwm_compute
+!, utau, utx, uty, Ts, utau_filt
+use neqwm, only : neq_laminar_calc, neq_turb_calc
 use test_filtermodule
 
 !use param, only : dx, dy, dz, lbc_mom, ubc_mom, coord, nproc, jt_total, nu_molec, &
@@ -255,11 +276,10 @@ real(rprec), dimension(ld,ny) :: ke_dealiased, dkedx, dkedy
 !real(rprec), dimension(ld,ny) :: dpdx_ave, dpdy_ave
 integer :: fid
 character*50 :: fname
-real(rprec), dimension(nx,ny) :: uinf_turb,vinf_turb,fu
+!real(rprec), dimension(nx,ny) :: uinf_turb,vinf_turb,fu
 real(rprec), dimension(nx,ny) :: upp, utaupp
 real(rprec) :: Tlam
 real(rprec), dimension(nx,ny) :: taudx_eq, taudy_eq, retd, utau_eq, fu_eq
-
 
 !Usbar = sqrt(Ules**2+Vles**2)
 !
@@ -286,23 +306,11 @@ if (coord==0) then
     else
         wtemp = 0.5_rprec*(w(:,:,wmpt)+w(:,:,wmpt+1))
     endif
-
-!    Ules = eps*uinst(1:nx,1:ny) + (1-eps)*Ules
-!    Vles = eps*vinst(1:nx,1:ny) + (1-eps)*Vles
-
-    ! p is set to zero after restarting
     if (jt .ne. 1) then
-        ! calculate real pressure gradient
-        call ke_dealiased_calc(ke_dealiased,utemp,vtemp,wtemp)
-        call ddxy_plane(ke_dealiased, dkedx, dkedy)
-        dplesdx(1:nx,1:ny) = dpdx(1:nx,1:ny,wmpt) - dkedx(1:nx,1:ny) &
-            - mean_p_force_x
-        dplesdy(1:nx,1:ny) = dpdy(1:nx,1:ny,wmpt) - dkedy(1:nx,1:ny) &
-            - mean_p_force_y
+        dplesdx = dpdx(1:nx,1:ny,wmpt)
+        dplesdy = dpdy(1:nx,1:ny,wmpt)
     endif
-
 else
-
     uinst(1:nx,1:ny) = u(1:nx,1:ny,nz-wmpt)
     vinst(1:nx,1:ny) = v(1:nx,1:ny,nz-wmpt)
     utemp = u(:,:,nz-wmpt)
@@ -312,35 +320,32 @@ else
     else
         wtemp = 0.5_rprec*(w(:,:,nz-wmpt)+w(:,:,nz-wmpt-1))
     endif
-
-!    Ules = eps*uinst(1:nx,1:ny) + (1-eps)*Ules
-!    Vles = eps*vinst(1:nx,1:ny) + (1-eps)*Vles
-
-    ! p is set to zero after restarting
     if (jt .ne. 1) then
-        ! calculate real pressure
-        call ke_dealiased_calc(ke_dealiased,utemp,vtemp,wtemp)
-        call ddxy_plane(ke_dealiased, dkedx, dkedy)
-        dplesdx(1:nx,1:ny) = dpdx(1:nx,1:ny,nz-wmpt) - dkedx(1:nx,1:ny) &
-            - mean_p_force_x
-        dplesdy(1:nx,1:ny) = dpdy(1:nx,1:ny,nz-wmpt) - dkedy(1:nx,1:ny) &
-            - mean_p_force_y
-   endif
+        dplesdx = dpdx(1:nx,1:ny,nz-wmpt)
+        dplesdy = dpdy(1:nx,1:ny,nz-wmpt)
+    endif
 end if
-
-eps2 = min(abs(dt/Ts/3._rprec),1._rprec)
+! p is set to zero after restarting
+if (jt .ne. 1) then
+    ! calculate real pressure gradient 
+    ! (dealiased and gradient computed spectrally
+    ! for accurate estimate of PG)
+    call ke_dealiased_calc(ke_dealiased,utemp,vtemp,wtemp)
+    call ddxy_plane(ke_dealiased, dkedx, dkedy)
+    dplesdx(1:nx,1:ny) = dplesdx(1:nx,1:ny) - dkedx(1:nx,1:ny) &
+        - mean_p_force_x
+    dplesdy(1:nx,1:ny) = dplesdy(1:nx,1:ny) - dkedy(1:nx,1:ny) &
+        - mean_p_force_y
+endif
 
 ! filtered friction velocity for time scales
-utau_filt = eps2*sqrt(twxbar**2+twybar**2) + (1._rprec-eps2)*utau_filt
-
-Tnu = ls**2._rprec*nu_molec/utau_filt**2._rprec
-Tdelta = Tnu + Deltay/0.4_rprec/utau_filt
-!Tdelta = (Tnu**4 + (Deltay/0.4_rprec/utau_filt)**4)**0.25
-!Tnu = 144._rprec*nu_molec
-!Tdelta = (Tnu**4 + (Deltay/0.4_rprec)**4)**0.25
+!utau_filt = eps2*sqrt(twxbar**2+twybar**2) + (1._rprec-eps2)*utau_filt
+Tnu = ls**2._rprec*nu_molec/utau**2._rprec
+Tdelta = Tnu + Deltay/0.4_rprec/utau
 Tlam = 8._rprec*Deltay**2.0/4._rprec/nu_molec
 
 eps1 = min(abs(dt/Tnu),1._rprec)
+eps2 = min(abs(dt/Ts/3._rprec),1._rprec)
 eps3 = min(abs(dt/Ts),1._rprec)
 eps4 = min(abs(dt/Tdelta),1._rprec)
 
@@ -370,6 +375,7 @@ dpdybar3 = eps4*dplesdy + (1._rprec-eps4)*dpdybar3
 dpdxppdelta = dplesdx - dpdxbar3
 dpdyppdelta = dplesdy - dpdybar3
 
+if (velocity_correction_flag) then
 ! subtracting Stokes layer non-equilibrium velocity
 !uinf = -eps4*Tdelta*dpdxppdelta + (1._rprec-eps4)*uinf
 !vinf = -eps4*Tdelta*dpdyppdelta + (1._rprec-eps4)*vinf
@@ -379,6 +385,7 @@ uinf = -dt*(dplesdx-dpdxbar1) + (1._rprec-eps4)*uinf
 vinf = -dt*(dplesdy-dpdybar1) + (1._rprec-eps4)*vinf
 ubar = ubar - uinf
 vbar = vbar - vinf
+endif
 
 ! non-equilibrium PG
 dpdxpp_mm = dpdxpp_m
@@ -400,35 +407,56 @@ dpdypp(1:nx,1:ny) = dplesdy(1:nx,1:ny) - dpdybar1(1:nx,1:ny)
 Ud = sqrt(ubar**2 + vbar**2)
 theta_d = atan2(vbar,ubar)
 
+! inputs to eqwm fit
+redelta = Ud*Deltay/nu_molec
+if (velocity_correction_flag) then
+dpdx_fit = dpdxbar1
+dpdy_fit = dpdybar1
+else
+dpdx_fit = dplesdx
+dpdy_fit = dplesdy
+endif
+psi_p = (dpdx_fit*cos(theta_d)+dpdy_fit*sin(theta_d))*Deltay**3.0/nu_molec**2.0
+
 ! ******** calling wall models **********
-! first pressure goes into relaxation term
-! second pressure used for "mean profile"
-!call lagrangian_rewm(Deltay,Ud,theta_d,dpdxbar1,dpdybar1,&
-!    dpdxbar1,dpdybar1,twxbar,twybar)
-call neq_laminar_calc(dpdxpp,dpdxpp_m,dpdxpp_mm,dpdypp,dpdypp_m,&
-    dpdypp_mm,twxpp,twypp)
 
-! turbulent non-equilibrium model
-call velocity_fit(Deltay*utau/nu_molec,fu)
-uinf_turb = ubar - utx*fu
-vinf_turb = vbar - uty*fu
-twxpp_turb = utau*uinf_turb/ls
-twypp_turb = utau*vinf_turb/ls
+!if (coord==0) then
+!    write(*,*) 'before: ', jt_total, utau(1,1), utx(1,1), uty(1,1)
+!endif
 
-!twxpp = 0._rprec
-!twypp = 0._rprec
+! Quasi-equilibrium
+select case (qeq_case)
+    case (0)
+        call eqwm_compute()
+    case (1)
+        call lagrangian_rewm()
+        !call eqwm_compute()
+end select
 
-! uncomment if using corrected equilibrium wall model (and comment out lagrangian_rewm)
-twxpp_turb = 0._rprec
-twypp_turb = 0._rprec
-call eqwm_compute(Deltay,Ud,theta_d,dpdxbar1,dpdybar1,&
-    dpdxbar1,dpdybar1,twxbar,twybar)
+!if (coord==0) then
+!    write(*,*) 'after : ', jt_total, utau(1,1), utx(1,1), uty(1,1)
+!endif
+
+! Laminar non-equilibrium
+if (lamNEQ_flag) then
+    call neq_laminar_calc()
+else
+    twxpp = 0._rprec
+    twypp = 0._rprec
+endif
+
+! Turbulent non-equilibrium
+if (turbNEQ_flag) then
+    call neq_turb_calc()
+else
+    twxpp_turb = 0._rprec
+    twypp_turb = 0._rprec
+endif
 
 ! mixing length at first grid point in inner units
 lp = vonk*dz/2._rprec*(twxbar**2+twybar**2)**0.25/nu_molec               &
     *(1 - exp(-dz/2._rprec*(twxbar**2+twybar**2)**0.25/nu_molec/25._rprec))
 ! total derivative at first grid point
-dudz_tot = sqrt(twxbar**2+twybar**2)/nu_molec/2.0/lp**2*(-1.0+sqrt(1.0+4.0*lp**2))
 dudz_tot = sqrt(twxbar**2+twybar**2)/nu_molec/2.0/lp**2*(-1.0+sqrt(1.0+4.0*lp**2))
 
 theta_w = atan2(twybar,twxbar)
@@ -496,6 +524,13 @@ end if
 
 !if (coord==0) then
 !    write(*,*) jt, 'after:',txz(nx/2,ny/2,1)
+!endif
+!if (coord==0) then
+!    call mts_monitor()
+!endif
+!if (coord==0) then
+!    call mts_ws_plane
+!    call mts_test_point
 !endif
 
 end subroutine mts_wallstress_calc
@@ -668,7 +703,7 @@ subroutine mts_monitor
 !
 use param, only : jt_total, total_time, path, nx, ny, dt
 use sim_param, only : u, v
-use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
+!use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
 
 implicit none
 
@@ -729,7 +764,7 @@ subroutine mts_monitor_plane
 ! averaged)
 !
 use param, only : jt_total, total_time, path, nx, ny, dt
-use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
+!use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
 
 implicit none
 
@@ -932,23 +967,23 @@ end if
 
 if (coord==0) then
     inquire (file='qeqwm_checkPoint_bot.bin', exist=file_flag)
-    if (file_flag .and. lbc_mom==5) then
+    if (file_flag .and. lbc_mom==4) then
         call qeqwm_read_checkPoint()
         write(*,*) 'reading qeqwm_checkpoint_bot'
     end if
     inquire (file='neqwm_I_checkPoint_bot.bin', exist=file_flag)
-    if (file_flag .and. lbc_mom==5) then
+    if (file_flag .and. lbc_mom==4) then
         call neqwm_read_I_checkPoint()
         write(*,*) 'reading neqwm_I_checkpoint_bot'
     end if
 else
     inquire (file='qeqwm_checkPoint_top.bin', exist=file_flag)
-    if (file_flag .and. ubc_mom==5) then
+    if (file_flag .and. ubc_mom==4) then
         call qeqwm_read_checkPoint()
         write(*,*) 'reading qeqwm_checkpoint_top'
     end if
     inquire (file='neqwm_I_checkPoint_top.bin', exist=file_flag)
-    if (file_flag .and. ubc_mom==5) then
+    if (file_flag .and. ubc_mom==4) then
         call neqwm_read_I_checkPoint()
         write(*,*) 'reading neqwm_I_checkpoint_top'
     end if
@@ -960,7 +995,7 @@ end subroutine mts_read_checkpoint
 subroutine debug_wm
 !*******************************************************************************
 use param, only : nx, ny, jt, coord, write_endian
-use qeqwm, only : utx, uty
+!use qeqwm, only : utx, uty
 
 implicit none
 
@@ -1034,6 +1069,71 @@ write(fid,*) jt_total,&
 close(fid)
 
 end subroutine write_velocity_pt1_pt2
+
+!*******************************************************************************
+subroutine mts_ws_plane
+!*******************************************************************************
+use param, only : nx, ny, path, jt_total
+use sim_param, only : txz, tyz
+use types, only : rprec
+
+integer :: fid
+
+character*50 :: fname
+
+fname = path // 'output/mts_ws_plane.dat'
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+    sum(txz(1:nx,1:ny,1))/nx/ny,&
+    sum(twxbar(1:nx,1:ny))/nx/ny,&
+    sum(twxpp(1:nx,1:ny))/nx/ny,&
+    sum(twxpp_turb(1:nx,1:ny))/nx/ny,&
+    sum(tyz(1:nx,1:ny,1))/nx/ny,&
+    sum(twybar(1:nx,1:ny))/nx/ny,&
+    sum(twypp(1:nx,1:ny))/nx/ny,&
+    sum(twypp_turb(1:nx,1:ny))/nx/ny
+close(fid)
+
+end subroutine mts_ws_plane
+
+!*******************************************************************************
+subroutine mts_test_point
+!*******************************************************************************
+use param, only : nx, ny, path, jt_total, total_time, dt
+use sim_param, only : u, v
+use types, only : rprec
+
+integer :: fid, i, j
+character*50 :: fname
+
+i = int(nx/2._rprec)
+j = int(ny/2._rprec)
+
+fname = path // 'output/mts_test_point.dat'
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+!    uinst(i,j),&
+!    vinst(i,j),&
+!    ubar(i,j),&
+!    vbar(i,j),&
+!    dplesdx(i,j),&
+!    dplesdy(i,j),&
+!    dpdx_fit(i,j),&
+!    dpdy_fit(i,j),&
+!    dpdxpp(i,j),&
+!    dpdypp(i,j)
+    dplesdx(i,j),&
+    dpdxbar1(i,j),&
+    dpdxpp(i,j),&
+    Tnu(i,j),&
+    Ts(i,j),&
+    utau(i,j),&
+    utau_filt(i,j),&
+    dt
+    
+close(fid)
+
+end subroutine mts_test_point
 
 end module mts_wm
 

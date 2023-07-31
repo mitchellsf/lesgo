@@ -2,10 +2,10 @@
 provides
  cfl_util.mod
  clock_m.mod
- composite_wm.mod
  coriolis.mod
  derivatives.mod
  emul_complex.mod
+ eqwm_smooth.mod
  fft.mod
  forcing.mod
  fringe.mod
@@ -19,6 +19,7 @@ provides
  messages.mod
  mpi_defs.mod
  mpi_transpose_mod.mod
+ mts_wm.mod
  neqwm.mod
  param.mod
  pid_m.mod
@@ -35,3 +36,4 @@ provides
  test_filtermodule.mod
  time_average.mod
  types.mod
+ wm_param.mod

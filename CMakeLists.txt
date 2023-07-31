@@ -179,7 +179,7 @@ set (Sources cfl_util.f90 clocks.f90 convec.f90 coriolis.f90 derivatives.f90 div
      sgs_param.f90 sgs_stag_util.f90 sim_param.f90 sponge.f90 stat_defs.f90
      std_dynamic.f90 string_util.f90 test_filtermodule.f90 tridag_array.f90
      time_average.f90 types.f90 wallstress.f90 init_random_seed.f90
-     iwmles.f90 mts_wm.f90 qeqwm.f90 neqwm.f90)
+     iwmles.f90 mts_wm.f90 qeqwm.f90 neqwm.f90 wm_param.f90 eqwm_smooth.f90)
 
 if (USE_MPI)
     add_definitions(-DPPMPI)

@@ -21,17 +21,19 @@
 module neqwm
 !*******************************************************************************
 use types, only : rprec
+use wm_param
 
 private
 public neqwm_initialize, neqwm_finalize, &
-    neqwm_write_I_checkpoint, neqwm_read_I_checkpoint, neq_laminar_calc
+    neqwm_write_I_checkpoint, neqwm_read_I_checkpoint, &
+    neq_laminar_calc, neq_turb_calc
 
-! sum-of-exponentials approximation coefficients
-real(rprec), dimension(:), allocatable :: ws, ss
-! integrals for history part of non-equilibrium wall model
-real(rprec), dimension(:,:,:), allocatable :: Ix, Iy
-! number of exponential terms
-integer :: nexp=0
+!! sum-of-exponentials approximation coefficients
+!real(rprec), dimension(:), allocatable :: ws, ss
+!! integrals for history part of non-equilibrium wall model
+!real(rprec), dimension(:,:,:), allocatable :: Ix, Iy
+!! number of exponential terms
+!integer :: nexp=0
 
 contains
 
@@ -82,15 +84,16 @@ deallocate(Iy)
 end subroutine neqwm_finalize
 
 !*******************************************************************************
-subroutine neq_laminar_calc(dpdxpp,dpdxpp_m,dpdxpp_mm,dpdypp,dpdypp_m,&
-    dpdypp_mm,twxpp,twypp)
+!subroutine neq_laminar_calc(dpdxpp,dpdxpp_m,dpdxpp_mm,dpdypp,dpdypp_m,&
+!    dpdypp_mm,twxpp,twypp)
+subroutine neq_laminar_calc()
 !*******************************************************************************
 use param, only : dt, nx, ny, nu_molec, dt_f
 
 implicit none
-real(rprec), dimension(nx,ny), intent(in) :: dpdxpp,dpdxpp_m,dpdxpp_mm,dpdypp,&
-    dpdypp_m,dpdypp_mm
-real(rprec), dimension(nx,ny), intent(out) :: twxpp,twypp
+!real(rprec), dimension(nx,ny), intent(in) :: dpdxpp,dpdxpp_m,dpdxpp_mm,dpdypp,&
+!    dpdypp_m,dpdypp_mm
+!real(rprec), dimension(nx,ny), intent(out) :: twxpp,twypp
 real(rprec), dimension(nx,ny) :: dpdx12, dpdx32, dpdy12, dpdy32, sumx, sumy
 real(rprec), dimension(nx,ny) :: tauwxpp_l, tauwxpp_h, tauwypp_l, tauwypp_h
 real(rprec) :: PI=4*atan(1._rprec)
@@ -125,6 +128,28 @@ twxpp = tauwxpp_l + tauwxpp_h
 twypp = tauwypp_l + tauwypp_h
 
 end subroutine neq_laminar_calc
+
+!*******************************************************************************
+subroutine neq_turb_calc()
+!*******************************************************************************
+use wm_param
+use param, only : nx, ny, nu_molec
+use qeqwm, only : velocity_fit
+!use mts_wm, only : ubar, vbar, twxpp_turb, twypp_turb, ls, Deltay
+!use qeqwm, only : utau, utx, uty, velocity_fit
+!use mts_wm, only : ubar
+
+implicit none
+real(rprec), dimension(nx,ny) :: fu, uinf_turb, vinf_turb
+
+!! turbulent non-equilibrium model
+call velocity_fit(Deltay*utau/nu_molec,fu)
+uinf_turb = ubar - utx*fu
+vinf_turb = vbar - uty*fu
+twxpp_turb = utau*uinf_turb/ls
+twypp_turb = utau*vinf_turb/ls
+
+end subroutine neq_turb_calc
 
 !*******************************************************************************
 subroutine neqwm_write_I_checkpoint

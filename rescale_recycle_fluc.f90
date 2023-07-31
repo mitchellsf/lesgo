@@ -308,7 +308,6 @@ if (coord==0 .and. mod(jt_total,1)==0) then
     call monitor_rescale_recycle()
 endif
 
-
 end subroutine rescale_recycle_fluc_calc
 
 !*******************************************************************************

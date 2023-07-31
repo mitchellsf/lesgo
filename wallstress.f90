@@ -48,7 +48,8 @@ use param, only : lbc_mom
 use param, only : ubc_mom, coord, nproc, nz ! these necessary only for upper bc
 use messages, only : error
 use iwmles, only : iwm_wallstress
-use composite_wm, only : composite_wallstress_calc
+use mts_wm, only : mts_wallstress_calc
+use eqwm_smooth, only : eqwm_calc
 use sim_param, only : txz, tyz, dudz, dvdz
 implicit none
 character(*), parameter :: sub_name = 'wallstress'
@@ -72,9 +73,10 @@ if (coord == 0) then
         case (3)
             call iwm_wallstress()
 
-        ! Composite wall model
+        ! MTS wall model
         case (4)
-            call composite_wallstress_calc
+            call mts_wallstress_calc
+            !call eqwm_calc
 
         ! Otherwise, invalid
         case default
@@ -100,9 +102,9 @@ if (coord == nproc-1) then
         case (3)
             call error(sub_name, 'invalid ubc_mom')
 
-        ! Composite wall model
+        ! MTS wall model
         case (4)
-            call composite_wallstress_calc
+            call mts_wallstress_calc
 
         ! Otherwise, invalid
         case default
