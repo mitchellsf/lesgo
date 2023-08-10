@@ -77,8 +77,8 @@ allocate(twxbar(nx,ny))
 allocate(twybar(nx,ny))
 allocate(twxpp(nx,ny))
 allocate(twypp(nx,ny))
-allocate(twxpp_turb(nx,ny))
-allocate(twypp_turb(nx,ny))
+allocate(twxp(nx,ny))
+allocate(twyp(nx,ny))
 allocate(uinst(nx,ny))
 allocate(vinst(nx,ny))
 allocate(Ud(nx,ny))
@@ -165,8 +165,8 @@ dpdxbar3 = dplesdx
 dpdybar3 = dplesdy
 dpdxppdelta = 0._rprec
 dpdyppdelta = 0._rprec
-twxpp_turb = 0._rprec
-twypp_turb = 0._rprec
+twxp = 0._rprec
+twyp = 0._rprec
 redelta = Ud*Deltay/nu_molec
 psi_p = dplesdx*Deltay**3.0/nu_molec**2.0
 
@@ -449,8 +449,8 @@ endif
 if (turbNEQ_flag) then
     call neq_turb_calc()
 else
-    twxpp_turb = 0._rprec
-    twypp_turb = 0._rprec
+    twxp = 0._rprec
+    twyp = 0._rprec
 endif
 
 ! mixing length at first grid point in inner units
@@ -477,13 +477,13 @@ theta_w = atan2(twybar,twxbar)
 
 
 if (coord==0) then
-    txz(1:nx,1:ny,1) = - twxbar - twxpp - twxpp_turb
-    tyz(1:nx,1:ny,1) = - twybar - twypp - twypp_turb
+    txz(1:nx,1:ny,1) = - twxbar - twxpp - twxp
+    tyz(1:nx,1:ny,1) = - twybar - twypp - twyp
     dudz(1:nx,1:ny,1) = dudz_tot*cos(theta_w)
     dvdz(1:nx,1:ny,1) = dudz_tot*sin(theta_w)
 else
-    txz(1:nx,1:ny,nz) = twxbar + twxpp + twxpp_turb
-    tyz(1:nx,1:ny,nz) = twybar + twypp + twypp_turb
+    txz(1:nx,1:ny,nz) = twxbar + twxpp + twxp
+    tyz(1:nx,1:ny,nz) = twybar + twypp + twyp
     dudz(1:nx,1:ny,nz) = -dudz_tot*cos(theta_w)
     dvdz(1:nx,1:ny,nz) = -dudz_tot*sin(theta_w)
 end if
@@ -1087,11 +1087,11 @@ write(fid,*) jt_total,&
     sum(txz(1:nx,1:ny,1))/nx/ny,&
     sum(twxbar(1:nx,1:ny))/nx/ny,&
     sum(twxpp(1:nx,1:ny))/nx/ny,&
-    sum(twxpp_turb(1:nx,1:ny))/nx/ny,&
+    sum(twxp(1:nx,1:ny))/nx/ny,&
     sum(tyz(1:nx,1:ny,1))/nx/ny,&
     sum(twybar(1:nx,1:ny))/nx/ny,&
     sum(twypp(1:nx,1:ny))/nx/ny,&
-    sum(twypp_turb(1:nx,1:ny))/nx/ny
+    sum(twyp(1:nx,1:ny))/nx/ny
 close(fid)
 
 end subroutine mts_ws_plane

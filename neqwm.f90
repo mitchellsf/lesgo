@@ -146,8 +146,8 @@ real(rprec), dimension(nx,ny) :: fu, uinf_turb, vinf_turb
 call velocity_fit(Deltay*utau/nu_molec,fu)
 uinf_turb = ubar - utx*fu
 vinf_turb = vbar - uty*fu
-twxpp_turb = utau*uinf_turb/ls
-twypp_turb = utau*vinf_turb/ls
+twxp = utau*uinf_turb/ls
+twyp = utau*vinf_turb/ls
 
 end subroutine neq_turb_calc
 

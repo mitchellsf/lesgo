@@ -43,6 +43,9 @@ type tavg_t
     real(rprec), dimension(:,:,:), allocatable :: p, fx, fy, fz
     real(rprec), dimension(:,:,:), allocatable :: cs_opt2
     real(rprec), dimension(:,:,:), allocatable :: vortx, vorty, vortz
+    ! mts wall model variables
+    real(rprec), dimension(:,:), allocatable :: twx, twxbar, twxpp, twxp
+    real(rprec), dimension(:,:), allocatable :: twy, twybar, twypp, twyp
     real(rprec) :: total_time
     ! Time between calls of tavg_compute, built by summing dt
     real(rprec) :: dt
@@ -109,6 +112,14 @@ allocate( this%cs_opt2(nx,ny,lbz:nz) ); this%cs_opt2(:,:,:) = 0._rprec
 allocate( this%vortx(nx,ny,lbz:nz) ); this%vortx(:,:,:) = 0._rprec
 allocate( this%vorty(nx,ny,lbz:nz) ); this%vorty(:,:,:) = 0._rprec
 allocate( this%vortz(nx,ny,lbz:nz) ); this%vortz(:,:,:) = 0._rprec
+allocate( this%twx(nx,ny) ); this%twx(:,:) = 0._rprec
+allocate( this%twxbar(nx,ny) ); this%twxbar(:,:) = 0._rprec
+allocate( this%twxpp(nx,ny) ); this%twxpp(:,:) = 0._rprec
+allocate( this%twxp(nx,ny) ); this%twxp(:,:) = 0._rprec
+allocate( this%twy(nx,ny) ); this%twy(:,:) = 0._rprec
+allocate( this%twybar(nx,ny) ); this%twybar(:,:) = 0._rprec
+allocate( this%twypp(nx,ny) ); this%twypp(:,:) = 0._rprec
+allocate( this%twyp(nx,ny) ); this%twyp(:,:) = 0._rprec
 
 fname = ftavg_in
 #ifdef PPMPI
@@ -154,6 +165,21 @@ else
     read(1) this%vortz
     close(1)
 end if
+inquire (file='mts_tavg_bot_checkpoint.bin', exist=exst)
+if (exst .and. coord==0) then
+    write(*,*) 'reading MTS wall stress time averaged data'
+    open(1, file='mts_tavg_bot_checkpoint.bin', action='read', position='rewind', form='unformatted',  &
+        convert=read_endian)
+    read(1) this%twx
+    read(1) this%twxbar
+    read(1) this%twxpp
+    read(1) this%twxp
+    read(1) this%twy
+    read(1) this%twybar
+    read(1) this%twypp
+    read(1) this%twyp
+    close(1)
+end if
 
 ! Allocate computation arrays
 allocate(w_uv(nx,ny,lbz:nz), u_w(nx,ny,lbz:nz), v_w(nx,ny,lbz:nz))
@@ -188,6 +214,7 @@ use sim_param, only : dudy, dudz, dvdx, dvdz, dwdx, dwdy
 use sim_param, only : fxa, fya, fza
 #endif
 use functions, only : interp_to_uv_grid, interp_to_w_grid
+use wm_param, only : twxbar, twxpp, twxp, twybar, twypp, twyp
 implicit none
 
 class(tavg_t), intent(inout) :: this
@@ -262,6 +289,18 @@ this%cs_opt2(:,:,1:) = this%cs_opt2(:,:,1:) + Cs_opt2(1:nx,1:ny,1:)*this%dt
 this%vortx(:,:,:) = this%vortx(:,:,:) + vortx(1:nx,1:ny,:) * this%dt
 this%vorty(:,:,:) = this%vorty(:,:,:) + vorty(1:nx,1:ny,:) * this%dt
 this%vortz(:,:,:) = this%vortz(:,:,:) + vortz(1:nx,1:ny,:) * this%dt
+
+if (coord==0 .and. lbc_mom==4) then
+this%twx(:,:) = this%twx(:,:) - txz(1:nx,1:ny,1)*this%dt
+this%twxbar(:,:) = this%twxbar(:,:) + twxbar(1:nx,1:ny)*this%dt
+this%twxpp(:,:) = this%twxpp(:,:) + twxpp(1:nx,1:ny)*this%dt
+this%twxp(:,:) = this%twxp(:,:) + twxp(1:nx,1:ny)*this%dt
+this%twy(:,:) = this%twy(:,:) - tyz(1:nx,1:ny,1)*this%dt
+this%twybar(:,:) = this%twybar(:,:) + twybar(1:nx,1:ny)*this%dt
+this%twypp(:,:) = this%twypp(:,:) + twypp(1:nx,1:ny)*this%dt
+this%twyp(:,:) = this%twyp(:,:) + twyp(1:nx,1:ny)*this%dt
+endif
+
 !
 ! do k = lbz, jzmax     ! lbz = 0 for mpi runs, otherwise lbz = 1
 ! do j = 1, ny
@@ -322,7 +361,7 @@ end subroutine compute
 subroutine finalize(this)
 !*******************************************************************************
 use grid_m
-use param, only : write_endian, lbz, path, coord, nproc
+use param, only : write_endian, lbz, path, coord, nproc, lbc_mom
 use string_util
 #ifdef PPMPI
 use mpi_defs, only : mpi_sync_real_array,MPI_SYNC_DOWNUP
@@ -442,7 +481,14 @@ this%cs_opt2(:,:,:) = this%cs_opt2(:,:,:) /  this%total_time
 this%vortx(:,:,:) = this%vortx(:,:,:) /  this%total_time
 this%vorty(:,:,:) = this%vorty(:,:,:) /  this%total_time
 this%vortz(:,:,:) = this%vortz(:,:,:) /  this%total_time
-
+this%twx(:,:) = this%twx(:,:) / this%total_time
+this%twxbar(:,:) = this%twxbar(:,:) / this%total_time
+this%twxpp(:,:) = this%twxpp(:,:) / this%total_time
+this%twxp(:,:) = this%twxp(:,:) / this%total_time
+this%twy(:,:) = this%twy(:,:) / this%total_time
+this%twybar(:,:) = this%twybar(:,:) / this%total_time
+this%twypp(:,:) = this%twypp(:,:) / this%total_time
+this%twyp(:,:) = this%twyp(:,:) / this%total_time
 
 #ifdef PPMPI
 call mpi_barrier( comm, ierr )
@@ -603,6 +649,20 @@ write(13,rec=2) this%vorty(:nx,:ny,1:nz)
 write(13,rec=3) this%vortz(:nx,:ny,1:nz)
 close(13)
 
+if (coord==0 .and. lbc_mom==4) then
+open(unit=13, file='output/mts_tavg_bot.bin', form='unformatted', convert=write_endian,        &
+    access='direct', recl=nx*ny*rprec)
+write(13,rec=1) this%twx(:nx,:ny)
+write(13,rec=2) this%twxbar(:nx,:ny)
+write(13,rec=3) this%twxpp(:nx,:ny)
+write(13,rec=4) this%twxp(:nx,:ny)
+write(13,rec=5) this%twy(:nx,:ny)
+write(13,rec=6) this%twybar(:nx,:ny)
+write(13,rec=7) this%twypp(:nx,:ny)
+write(13,rec=8) this%twyp(:nx,:ny)
+close(13)
+endif
+
 #endif
 
 #ifdef PPMPI
@@ -669,7 +729,7 @@ subroutine checkpoint(this)
 ! for intermediate checkpoints and by 'tavg_finalize' at the end of the
 ! simulation.
 !
-use param, only : write_endian, coord
+use param, only : write_endian, coord, lbc_mom
 use string_util
 implicit none
 
@@ -712,6 +772,20 @@ write(1) this%vortx
 write(1) this%vorty
 write(1) this%vortz
 close(1)
+
+if (coord==0 .and. lbc_mom==4) then
+open(1, file='mts_tavg_bot_checkpoint.bin', action='write', position='rewind',form='unformatted',      &
+    convert=write_endian)
+write(1) this%twx
+write(1) this%twxbar
+write(1) this%twxpp
+write(1) this%twxp
+write(1) this%twy
+write(1) this%twybar
+write(1) this%twypp
+write(1) this%twyp
+close(1)
+endif
 
 end subroutine checkpoint
 

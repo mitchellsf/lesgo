@@ -29,7 +29,7 @@ public
 ! variables for all wall models
 ! wall stress from quasi-equilibrium and non-equilibrium models
 real(rprec), dimension(:,:), allocatable :: twxbar, twybar, twxpp, twypp,&
-    twxpp_turb,twypp_turb
+    twxp,twyp
 real(rprec), dimension(:,:), allocatable :: twx_eq, twy_eq
 ! velocities at first grid point (non-filtered)
 real(rprec), dimension(:,:), allocatable :: uinst, vinst, Ud
