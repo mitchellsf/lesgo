@@ -204,7 +204,12 @@ qtot = 0.5_rprec*(wtop_bl(1)+wtop_bl(nx))*dx
 do jx = 2,nx
     qtot = qtot + 0.5_rprec*(wtop_bl(jx)+wtop_bl(jx-1))*dx
 enddo
-write(*,*) 'Qtot: ',qtot
+if (coord==0) then
+    write(*,*) 'Qtot: ',qtot
+endif
+
+
+
 
 !endif
 

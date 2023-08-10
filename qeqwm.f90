@@ -27,7 +27,7 @@ private
 public qeqwm_initialize, qeqwm_finalize, lagrangian_rewm, eqwm_compute, &
     qeqwm_write_checkpoint, qeqwm_read_checkpoint, &
 !    utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty, utau_filt, &
-    velocity_fit
+    velocity_fit, retd_fit
 
 !!Lagrangian relaxation wall model variables
 !! friction velocities

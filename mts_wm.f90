@@ -68,10 +68,11 @@ subroutine mts_initialize
 use param, only : nx, ny, nz, dz, coord, mean_p_force_x, mean_p_force_y, &
     nu_molec, wmpt
 use sim_param, only : u, v
-use qeqwm, only : qeqwm_initialize
+use qeqwm, only : qeqwm_initialize, retd_fit
 use neqwm, only : neqwm_initialize
 
 implicit none
+real(rprec), dimension(nx,ny) :: retd
 
 allocate(twxbar(nx,ny))
 allocate(twybar(nx,ny))
@@ -122,13 +123,6 @@ allocate(utxtemp(nx,ny,1000))
 allocate(utytemp(nx,ny,1000))
 
 ! provide initial values
-twxbar = mean_p_force_x
-twybar = mean_p_force_y
-twx_eq = twxbar
-twy_eq = twybar 
-
-twxpp = 0._rprec
-twypp = 0._rprec
 if (coord==0) then
     uinst = u(1:nx,1:ny,wmpt)
     vinst = v(1:nx,1:ny,wmpt)
@@ -139,6 +133,14 @@ endif
 ubar = uinst
 vbar = vinst
 Ud = sqrt(uinst**2+vinst**2)
+redelta = Ud*Deltay/nu_molec
+call retd_fit(redelta,retd)
+twx_eq = (retd*nu_molec/Deltay)**2.0
+twy_eq = 0._rprec
+twxbar = twx_eq
+twybar = twy_eq
+twxpp = 0._rprec
+twypp = 0._rprec
 dplesdx = - mean_p_force_x
 dplesdy = - mean_p_force_y
 dpdxbar1 = dplesdx
@@ -167,7 +169,6 @@ dpdxppdelta = 0._rprec
 dpdyppdelta = 0._rprec
 twxp = 0._rprec
 twyp = 0._rprec
-redelta = Ud*Deltay/nu_molec
 psi_p = dplesdx*Deltay**3.0/nu_molec**2.0
 
 call qeqwm_initialize
@@ -242,7 +243,7 @@ use param, only : nx, ny, nz, dz, ld, nz, coord, dt, vonk, nu_molec, jt, &
 use param, only : jt_total, total_time
 use param, only : qeq_case, lamNEQ_flag, turbNEQ_flag, velocity_correction_flag
 use sim_param, only : u, v, w, dpdx, dpdy, txz, tyz, dudz, dvdz
-use qeqwm, only : lagrangian_rewm, eqwm_compute
+use qeqwm, only : lagrangian_rewm, eqwm_compute, retd_fit
 !, utau, utx, uty, Ts, utau_filt
 use neqwm, only : neq_laminar_calc, neq_turb_calc
 use test_filtermodule
@@ -263,7 +264,7 @@ implicit none
 real(rprec), dimension(nx,ny) :: eps1, eps2, eps3, eps4
 
 integer :: i, j
-real(rprec), dimension(nx,ny) :: lp, dudz_tot, theta_w
+real(rprec), dimension(nx,ny) :: lp, dudz_tot, theta_w, retd2, utau2
 !real(rprec), dimension(nx,ny) :: uinst_m, vinst_m, Ules_m, Vles_m, advx, advy
 !real(rprec), dimension(nx,ny) :: Usbar
 !real(rprec), dimension(ld,ny) :: dummy1, dummy2, dummy3, dummy4
@@ -453,11 +454,14 @@ else
     twyp = 0._rprec
 endif
 
-! mixing length at first grid point in inner units
-lp = vonk*dz/2._rprec*(twxbar**2+twybar**2)**0.25/nu_molec               &
-    *(1 - exp(-dz/2._rprec*(twxbar**2+twybar**2)**0.25/nu_molec/25._rprec))
+! velocity gradient at first grid point computed without PG in fit
+! for simplicity, friction velocity computed using LES velocity at wmpt
+call retd_fit(redelta,retd2)
+utau2 = nu_molec*retd2/Deltay
+lp = vonk*dz/2._rprec*utau2/nu_molec                          &
+    *(1 - exp(-dz/2._rprec*utau2/nu_molec/25._rprec))
 ! total derivative at first grid point
-dudz_tot = sqrt(twxbar**2+twybar**2)/nu_molec/2.0/lp**2*(-1.0+sqrt(1.0+4.0*lp**2))
+dudz_tot = utau2**2/nu_molec/2._rprec/lp**2*(-1 + sqrt(1 + 4._rprec*lp**2))
 
 theta_w = atan2(twybar,twxbar)
 
@@ -487,18 +491,6 @@ else
     dudz(1:nx,1:ny,nz) = -dudz_tot*cos(theta_w)
     dvdz(1:nx,1:ny,nz) = -dudz_tot*sin(theta_w)
 end if
-
-!if (coord==0 .and. mod(jt_total,100)==0) then
-!    write(*,*) jt_total,total_time,&
-!               -sum(txz(:,:,1))/nx/ny,&
-!               sum(twxbar(:,:))/nx/ny,&
-!               sum(twxpp(:,:))/nx/ny,&
-!               sum(twxpp_turb(:,:))/nx/ny,&
-!               -sum(tyz(:,:,1))/nx/ny,&
-!               sum(twybar(:,:))/nx/ny,&
-!               sum(twypp(:,:))/nx/ny,&
-!               sum(twypp_turb(:,:))/nx/ny
-!endif
 
 !if (coord==0) then
 !i = int(nx/2._rprec)
