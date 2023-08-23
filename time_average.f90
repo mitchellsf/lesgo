@@ -163,6 +163,7 @@ else
     read(1) this%vortx
     read(1) this%vorty
     read(1) this%vortz
+    read(1) this%p
     close(1)
 end if
 inquire (file='mts_tavg_bot_checkpoint.bin', exist=exst)
@@ -771,6 +772,7 @@ write(1) this%cs_opt2
 write(1) this%vortx
 write(1) this%vorty
 write(1) this%vortz
+write(1) this%p
 close(1)
 
 if (coord==0 .and. lbc_mom==4) then

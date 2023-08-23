@@ -116,6 +116,7 @@ use param, only : ld, nx, ny, nu_molec, dt, dt_f, jt, coord, jt_total, &
     total_time, vonk
 use grid_m
 use param, only : path
+use param, only : inflow_type, fringe_region_end, fringe_region_len, L_x
 !use eqwm_dyn, only : dynamic_smag_model
 
 implicit none
@@ -137,6 +138,7 @@ integer, dimension(2) :: temp
 character*50 :: fname
 real(rprec), dimension(nx,ny) :: fu_const
 real(rprec), dimension(nx,ny) :: utxp, utyp
+real(rprec) :: xf1
 
 nullify(x,y)
 x => grid % x
@@ -167,7 +169,7 @@ call retd_pres_fit(redelta,psi_p,retdu)
 !taud = (retdu*nu_molec/Deltay)**2
 !taudx = taud*cos(theta_d)
 !taudy = taud*sin(theta_d)
-twx_eq = (retdu*nu_molec/Deltay)**2.0*cos(theta_d)
+twx_eq = (retdu*nu_molec/Deltay)**2.0*cos(theta_d) + 10._rprec**-10._rprec
 twy_eq = (retdu*nu_molec/Deltay)**2.0*sin(theta_d)
 
 rhsx = utx + dt*(utau*delta_star*(ssx-sxp)/dt_f &
@@ -175,12 +177,35 @@ rhsx = utx + dt*(utau*delta_star*(ssx-sxp)/dt_f &
 rhsy = uty + dt*(utau*delta_star*(ssy-syp)/dt_f &
     + (twy_eq/utau - uty)/Ts)
 
+xf1 = modulo(fringe_region_end-fringe_region_len,1._rprec)*L_x
+
+!do i = 1,100
+!do j = 1,ny
+!!    rhsx0(i,j) = twx_eq(i,j)/(twx_eq(i,j)**2+twy_eq(i,j)**2)**0.25 
+!!    rhsy0(i,j) = twy_eq(i,j)/(twx_eq(i,j)**2+twy_eq(i,j)**2)**0.25
+!    rhsx0(i,j) = rhsx(i,j)
+!    rhsy0(i,j) = rhsy(i,j)
+!enddo
+!enddo
+
 do i = 1,nx
 do j = 1,ny
     x0 = x(i) - vtx(i,j)*dt
     y0 = y(j) - vty(i,j)*dt
-    call bilinear_interp(rhsx,x0,y0,rhsx0(i,j))
-    call bilinear_interp(rhsy,x0,y0,rhsy0(i,j))
+!    if (inflow_type .ne. 0 .and. &
+!        modulo(x0,L_x) >= xf1 .and. &
+!        modulo(x0,L_x) <= xf1 + fringe_region_len*L_x) then
+!        rhsx0(i,j) = rhsx(i,j)
+!        rhsy0(i,j) = rhsy(i,j)
+!!        rhsx0(i,j) = twx_eq(i,j)/(twx_eq(i,j)**2+twy_eq(i,j)**2)**0.25 
+!!        rhsy0(i,j) = twy_eq(i,j)/(twx_eq(i,j)**2+twy_eq(i,j)**2)**0.25
+!!        rhsx0(i,j) = twx_eq(i,j)/utau(i,j) + 10._rprec**-10.0
+!!        rhsy0(i,j) = twy_eq(i,j)/utau(i,j) + 10._rprec**-10.0
+!!        write(*,*) jt_total,twx_eq(i,j),twy_eq(i,j),rhsx0(i,j)
+!    else
+        call bilinear_interp(rhsx,x0,y0,rhsx0(i,j))
+        call bilinear_interp(rhsy,x0,y0,rhsy0(i,j))
+!    endif
 enddo
 enddo
 
