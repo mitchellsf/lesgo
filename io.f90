@@ -745,6 +745,8 @@ use sim_param, only : u, v, w, p
 use sim_param, only : dwdy, dwdx, dvdx, dudy
 use sim_param, only : txz, tyz
 use functions, only : interp_to_w_grid
+use param, only : lbc_mom, ubc_mom
+use wm_param, only : twxbar, twybar, twxpp, twypp, twxp, twyp
 
 use stat_defs, only : xplane, yplane
 #ifdef PPMPI
@@ -1111,7 +1113,20 @@ elseif (itype==6) then
         write(13,rec=1) txz(1:nx,1:ny,1)
         write(13,rec=2) tyz(1:nx,1:ny,1)
         close(13)
-    !  top wall
+        ! MTS wall stress components
+        if (lbc_mom==4) then
+            call string_splice(fname, path // 'output/ws_mts_bot_', jt_total, bin_ext)
+            open(unit=13,file=fname,form='unformatted',convert=write_endian,   &
+                            access='direct',recl=nx*ny*rprec)
+            write(13,rec=1) twxbar(1:nx,1:ny)
+            write(13,rec=2) twybar(1:nx,1:ny)
+            write(13,rec=3) twxpp(1:nx,1:ny)
+            write(13,rec=4) twypp(1:nx,1:ny)
+            write(13,rec=5) twxp(1:nx,1:ny)
+            write(13,rec=6) twyp(1:nx,1:ny)
+            close(13)
+        endif 
+   !  top wall
     elseif (coord == nproc-1) then
         call string_splice(fname, path // 'output/ws_top_', jt_total, bin_ext)
         open(unit=14,file=fname,form='unformatted',convert=write_endian,   &
@@ -1119,6 +1134,19 @@ elseif (itype==6) then
         write(14,rec=1) txz(1:nx,1:ny,nz)
         write(14,rec=2) tyz(1:nx,1:ny,nz)
         close(14)
+        ! MTS wall stress components
+        if (ubc_mom==4) then
+            call string_splice(fname, path // 'output/ws_mts_top_', jt_total, bin_ext)
+            open(unit=14,file=fname,form='unformatted',convert=write_endian,   &
+                            access='direct',recl=nx*ny*rprec)
+            write(14,rec=1) twxbar(1:nx,1:ny)
+            write(14,rec=2) twybar(1:nx,1:ny)
+            write(14,rec=3) twxpp(1:nx,1:ny)
+            write(14,rec=4) twypp(1:nx,1:ny)
+            write(14,rec=5) twxp(1:nx,1:ny)
+            write(14,rec=6) twyp(1:nx,1:ny)
+            close(14)
+        endif 
     endif
 
 else

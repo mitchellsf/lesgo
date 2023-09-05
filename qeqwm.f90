@@ -63,26 +63,18 @@ allocate(Ts(nx,ny))
 allocate(Us(nx,ny))
 allocate(vtx(nx,ny))
 allocate(vty(nx,ny))
-!allocate(upwp(nx,ny))
-!allocate(vpwp(nx,ny))
 allocate(utau_filt(nx,ny))
 
-utau = 1._rprec
-utx = 1._rprec
+utau = sqrt(twxbar)
+utx = sqrt(twxbar)
 uty = 0._rprec
 ssx = 1._rprec
-ssy = 1._rprec
-if (coord==0) then
-    Us(1:nx,1:ny) = sum(u(1:nx,1:ny,wmpt))/nx/ny
-else
-    Us(1:nx,1:ny) = sum(u(1:nx,1:ny,nz-wmpt))/nx/ny
-endif
-Ts(1:nx,1:ny) = Us(1:nx,1:ny)*(wmpt-0.5_rprec)*dz
+ssy = 0._rprec
+Us = ubar
+Ts = Us*Deltay/utau**2.0
 vtx = 0._rprec
 vty = 0._rprec
-!upwp = -utx*utau
-!vpwp = -uty*utau
-utau_filt = 1._rprec
+utau_filt = utau
 
 end subroutine qeqwm_initialize
           
@@ -164,8 +156,8 @@ vty = (1.0-delta_star-theta_delta)*uty*fu
 !redu = Ud*Deltay/nu_molec
 !dpdxu = dpdxbar2*cos(theta_d) + dpdybar2*sin(theta_d)
 !psi_p = dpdxu*Deltay**3.0/nu_molec**2.0
-call retd_pres_fit(redelta,psi_p,retdu)
-!call retd_fit_calc(redu,retdu)
+!call retd_pres_fit(redelta,psi_p,retdu)
+call retd_fit(redelta,retdu)
 !taud = (retdu*nu_molec/Deltay)**2
 !taudx = taud*cos(theta_d)
 !taudy = taud*sin(theta_d)
@@ -322,7 +314,8 @@ Ts = fu*Deltay/utau
 !redu = Ud*Deltay/nu_molec
 !dpdxu = dpdxbar2*cos(theta_d) + dpdybar2*sin(theta_d)
 !psi_p = dpdxu*Deltay**3.0/nu_molec**2.0
-call retd_pres_fit(redelta,psi_p,retdu)
+!call retd_pres_fit(redelta,psi_p,retdu)
+call retd_fit(redelta,retdu)
 !taud = (retdu*nu_molec/Deltay)**2
 !taudx = taud*cos(theta_d)
 !taudy = taud*sin(theta_d)

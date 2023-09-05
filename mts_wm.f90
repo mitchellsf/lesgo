@@ -66,13 +66,14 @@ contains
 subroutine mts_initialize
 !*******************************************************************************
 use param, only : nx, ny, nz, dz, coord, mean_p_force_x, mean_p_force_y, &
-    nu_molec, wmpt
+    nu_molec, wmpt, jt_total, nproc, lbc_mom, ubc_mom
 use sim_param, only : u, v
 use qeqwm, only : qeqwm_initialize, retd_fit
 use neqwm, only : neqwm_initialize
 
 implicit none
 real(rprec), dimension(nx,ny) :: retd
+logical :: mts_wm_file_flag
 
 allocate(twxbar(nx,ny))
 allocate(twybar(nx,ny))
@@ -133,6 +134,7 @@ endif
 ubar = uinst
 vbar = vinst
 Ud = sqrt(uinst**2+vinst**2)
+Deltay = (wmpt-0.5_rprec)*dz
 redelta = Ud*Deltay/nu_molec
 call retd_fit(redelta,retd)
 twx_eq = (retd*nu_molec/Deltay)**2.0
@@ -155,8 +157,6 @@ dpdxpp_m = 0._rprec
 dpdypp_m = 0._rprec
 dpdxpp_mm = 0._rprec
 dpdypp_mm = 0._rprec
-!Deltay = dz/2._rprec
-Deltay = (wmpt-0.5_rprec)*dz
 Tnu = 100._rprec*nu_molec/twxbar
 uinf = 0._rprec
 vinf = 0._rprec
@@ -173,6 +173,21 @@ psi_p = dplesdx*Deltay**3.0/nu_molec**2.0
 
 call qeqwm_initialize
 call neqwm_initialize
+
+! check mts restart file
+if (coord==0) then
+    inquire (file='mts_checkPoint_bot.bin', exist=mts_wm_file_flag)
+    if (mts_wm_file_flag .and. lbc_mom==4) then
+        call mts_read_checkPoint()
+        write(*,*) 'reading mts_checkpoint_bot'
+    end if
+else if (coord==nproc-1) then
+    inquire (file='mts_checkPoint_top.bin', exist=mts_wm_file_flag)
+    if (mts_wm_file_flag .and. ubc_mom==4) then
+        call mts_read_checkPoint()
+        write(*,*) 'reading mts_checkpoint_top'
+    end if
+end if
 
 end subroutine mts_initialize
 
@@ -239,7 +254,7 @@ subroutine mts_wallstress_calc
 !*******************************************************************************
 
 use param, only : nx, ny, nz, dz, ld, nz, coord, dt, vonk, nu_molec, jt, &
-    mean_p_force_x, mean_p_force_y, nu_molec, wmpt, path
+    mean_p_force_x, mean_p_force_y, nu_molec, wmpt, path, dx
 use param, only : jt_total, total_time
 use param, only : qeq_case, lamNEQ_flag, turbNEQ_flag, velocity_correction_flag
 use sim_param, only : u, v, w, dpdx, dpdy, txz, tyz, dudz, dvdz
@@ -258,6 +273,7 @@ use test_filtermodule
 !!use emul_complex, only : OPERATOR(.MULI.)
 !use string_util
 use derivatives
+use rescale_recycle_fluc, only : apply_fringe
 
 implicit none
 
@@ -338,6 +354,18 @@ if (jt .ne. 1) then
     dplesdy(1:nx,1:ny) = dplesdy(1:nx,1:ny) - dkedy(1:nx,1:ny) &
         - mean_p_force_y
 endif
+! force PG to be zero in fringe region
+do i = 1, apply_fringe%nx
+    dplesdx(apply_fringe%iwrap(i),:) = 0._rprec
+    dplesdy(apply_fringe%iwrap(i),:) = 0._rprec
+enddo
+! force PG to be zero near inlet
+i = 1
+do while (dx*(i-1) < 100._rprec)
+    dplesdx(i,:) = 0._rprec
+    dplesdy(i,:) = 0._rprec
+    i = i+1
+enddo
 
 ! filtered friction velocity for time scales
 !utau_filt = eps2*sqrt(twxbar**2+twybar**2) + (1._rprec-eps2)*utau_filt
@@ -434,10 +462,6 @@ select case (qeq_case)
         !call eqwm_compute()
 end select
 
-!if (coord==0) then
-!    write(*,*) 'after : ', jt_total, utau(1,1), utx(1,1), uty(1,1)
-!endif
-
 ! Laminar non-equilibrium
 if (lamNEQ_flag) then
     call neq_laminar_calc()
@@ -517,9 +541,9 @@ end if
 !if (coord==0) then
 !    write(*,*) jt, 'after:',txz(nx/2,ny/2,1)
 !endif
-!if (coord==0) then
-!    call mts_monitor()
-!endif
+if (coord==0) then
+    call mts_monitor_pt()
+endif
 !if (coord==0) then
 !    call mts_ws_plane
 !    call mts_test_point
@@ -747,6 +771,70 @@ write(fid,*) jt_total,&
 close(fid)
 
 end subroutine mts_monitor
+
+!*******************************************************************************
+subroutine mts_monitor_pt
+!*******************************************************************************
+!
+! This subroutine monitors the temporal evolution of mts quantities at a point
+!
+use param, only : jt_total, total_time, path, nx, ny, dt
+use sim_param, only : u, v
+!use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
+
+implicit none
+
+integer :: fid, i, j
+character*50 :: fname
+
+!i = int(nx/2._rprec)
+j = int(ny/2._rprec)
+i = 100
+
+fname = path // 'output/mts_monitor_pt.dat'
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+    total_time,&
+    dt,&
+    Deltay,&
+    twxbar(i,j),&
+    twybar(i,j),&
+    twxpp(i,j),&
+    twypp(i,j),&
+    twxp(i,j),&
+    twyp(i,j),&
+    uinst(i,j),&
+    vinst(i,j),&
+    ubar(i,j),&
+    vbar(i,j),&
+    dplesdx(i,j),&
+    dplesdy(i,j),&
+    dpdxbar1(i,j),&
+    dpdybar1(i,j),&
+    dpdxbar2(i,j),&
+    dpdybar2(i,j),&
+    dpdxpp(i,j),&
+    dpdypp(i,j),&
+    ! qeqwm variables
+    utau(i,j),&
+    utx(i,j),&
+    uty(i,j),&
+    ssx(i,j),&
+    ssy(i,j),&
+    Ts(i,j),&
+    Us(i,j),&
+    vtx(i,j),&
+    vty(i,j),&
+    uinf(i,j),&
+    vinf(i,j),&
+    Tdelta(i,j),&
+    dpdxbar3(i,j),&
+    dpdybar3(i,j),&
+    dpdxppdelta(i,j),&
+    dpdyppdelta(i,j)
+close(fid)
+
+end subroutine mts_monitor_pt
 
 !*******************************************************************************
 subroutine mts_monitor_plane

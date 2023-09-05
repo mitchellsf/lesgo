@@ -176,6 +176,9 @@ call init_fft()
 ! this is used for lower BC, even if no dynamic model
 call test_filter_init( )
 
+! Initialize velocity field
+call initial()
+
 ! Initialize integral wall model xiang
 if (lbc_mom == 3) then
     if (coord==0) call iwm_init()
@@ -194,9 +197,6 @@ if (ubc_mom==4) then
         write(*,*) 'initializing mts_wm top'
     end if
 endif
-
-! Initialize velocity field
-call initial()
 
 ! Initialize concurrent precursor stuff
 #if defined(PPMPI) && defined(PPCPS)
