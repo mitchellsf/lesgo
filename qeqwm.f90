@@ -156,8 +156,8 @@ vty = (1.0-delta_star-theta_delta)*uty*fu
 !redu = Ud*Deltay/nu_molec
 !dpdxu = dpdxbar2*cos(theta_d) + dpdybar2*sin(theta_d)
 !psi_p = dpdxu*Deltay**3.0/nu_molec**2.0
-!call retd_pres_fit(redelta,psi_p,retdu)
-call retd_fit(redelta,retdu)
+call retd_pres_fit(redelta,psi_p,retdu)
+!call retd_fit(redelta,retdu)
 !taud = (retdu*nu_molec/Deltay)**2
 !taudx = taud*cos(theta_d)
 !taudy = taud*sin(theta_d)
@@ -314,8 +314,8 @@ Ts = fu*Deltay/utau
 !redu = Ud*Deltay/nu_molec
 !dpdxu = dpdxbar2*cos(theta_d) + dpdybar2*sin(theta_d)
 !psi_p = dpdxu*Deltay**3.0/nu_molec**2.0
-!call retd_pres_fit(redelta,psi_p,retdu)
-call retd_fit(redelta,retdu)
+call retd_pres_fit(redelta,psi_p,retdu)
+!call retd_fit(redelta,retdu)
 !taud = (retdu*nu_molec/Deltay)**2
 !taudx = taud*cos(theta_d)
 !taudy = taud*sin(theta_d)
@@ -344,7 +344,7 @@ implicit none
 real(rprec), dimension(nx,ny), intent(in) :: redelta_in, psi_in
 real(rprec), dimension(nx,ny), intent(out) :: retd_out
 real(rprec), dimension(nx,ny) :: retd_eq
-real(rprec) :: retd_min, pp, redelta_min
+real(rprec) :: retd_min, pp, redelta_min, aa
 integer :: jx, jy
 
 call retd_fit(redelta_in,retd_eq)
@@ -356,10 +356,16 @@ if (psi_in(jx,jy) < 0) then
     pp = 2.5 - 0.6*(1.0 + tanh(2.0*(log10(-psi_in(jx,jy))-6.0)))
     retd_out(jx,jy) = (retd_min**pp + retd_eq(jx,jy)**pp)**(1.0/pp)
 else
-    redelta_min = 2.5*psi_in(jx,jy)**0.54*(1.0+(30.0/psi_in(jx,jy))**0.5)**-0.88
-    if (redelta_in(jx,jy) > redelta_min) then
-        retd_out(jx,jy) = retd_eq(jx,jy)*&
-            (1.0-(1.0+log(redelta_in(jx,jy)/redelta_min))**-1.9)
+    !redelta_min = 2.5*psi_in(jx,jy)**0.54*(1.0+(30.0/psi_in(jx,jy))**0.5)**-0.88
+    !if (redelta_in(jx,jy) > redelta_min) then
+    !    retd_out(jx,jy) = retd_eq(jx,jy)*&
+    !        (1.0-(1.0+log(redelta_in(jx,jy)/redelta_min))**-1.9)
+    !else
+    !    retd_out(jx,jy) = 0._rprec
+    !endif
+    aa = 12.38_rprec/(1._rprec+20.3_rprec*redelta_in(jx,jy))
+    if (retd_eq(jx,jy) - aa*psi_in(jx,jy) > 0) then
+        retd_out(jx,jy) = retd_eq(jx,jy) - aa*psi_in(jx,jy)
     else
         retd_out(jx,jy) = 0._rprec
     endif

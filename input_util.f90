@@ -681,6 +681,16 @@ do
                 read (buff(equal_pos+1:), *) ws_inter_nstart
             case ('WS_INTER_NEND')
                 read (buff(equal_pos+1:), *) ws_inter_nend
+            case ('MTS_LINE_CALC')
+                read (buff(equal_pos+1:), *) mts_line_calc
+            case ('MTS_LINE_NSTART')
+                read (buff(equal_pos+1:), *) mts_line_nstart
+            case ('MTS_LINE_NEND')
+                read (buff(equal_pos+1:), *) mts_line_nend
+            case ('MTS_LINE_NSKIP')
+                read (buff(equal_pos+1:), *) mts_line_nskip
+            case ('MTS_LINE_ISKIP')
+                read (buff(equal_pos+1:), *) mts_line_iskip
             case default
                 if (coord == 0) write(*,*) 'Found unused data value in '       &
                     // block_name // ' block: ' // buff(1:equal_pos-1)

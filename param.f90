@@ -302,4 +302,9 @@ integer :: ws_plane_nstart=10000, ws_plane_nend=50000, ws_plane_nskip=10000
 logical :: ws_inter_calc=.false.
 integer :: ws_inter_nstart=10000, ws_inter_nend=50000
 
+! record MTS variables along line in x-direction
+logical :: mts_line_calc=.false.
+integer :: mts_line_nstart=1, mts_line_nend=1, mts_line_nskip=1
+integer :: mts_line_iskip=1
+
 end module param

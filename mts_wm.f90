@@ -28,7 +28,7 @@ implicit none
 private
 public mts_initialize, mts_finalize, mts_wallstress_calc,&
     mts_monitor, mts_monitor_plane, mts_write_checkpoint,&
-    mts_read_checkpoint, get_wallmodelstress
+    mts_read_checkpoint, get_wallmodelstress, mts_monitor_line
 !    twxbar, twybar, twxpp, twypp, twxpp_turb, twypp_turb,&
 !    ubar, vbar, ls, Deltay
 
@@ -287,6 +287,7 @@ real(rprec), dimension(nx,ny) :: lp, dudz_tot, theta_w, retd2, utau2
 !real(rprec), dimension(ld,ny) :: ududx, vdvdx, wdwdx
 !real(rprec), dimension(ld,ny) :: ududy, vdvdy, wdwdy
 real(rprec), dimension(ld,ny) :: utemp, vtemp, wtemp
+real(rprec), dimension(ld,ny) :: dpdx_filt, dpdy_filt
 real(rprec), dimension(ld,ny) :: ke_dealiased, dkedx, dkedy
 !real(rprec), dimension(ld,ny) :: ke_dealiased, ke1, ke2, ke3, dkedx, dkedy
 !real(rprec), dimension(ld,ny) :: dkedx1, dkedx2, dkedx3, dkedy1, dkedy2, dkedy3
@@ -367,6 +368,12 @@ do while (dx*(i-1) < 100._rprec)
     i = i+1
 enddo
 
+! filtered pressure gradient used if no velocity correction
+dpdx_filt(1:nx,1:ny) = dplesdx(1:nx,1:ny)
+dpdy_filt(1:nx,1:ny) = dplesdy(1:nx,1:ny)
+call test_filter(dpdx_filt)
+call test_filter(dpdy_filt)
+
 ! filtered friction velocity for time scales
 !utau_filt = eps2*sqrt(twxbar**2+twybar**2) + (1._rprec-eps2)*utau_filt
 Tnu = ls**2._rprec*nu_molec/utau**2._rprec
@@ -414,6 +421,11 @@ uinf = -dt*(dplesdx-dpdxbar1) + (1._rprec-eps4)*uinf
 vinf = -dt*(dplesdy-dpdybar1) + (1._rprec-eps4)*vinf
 ubar = ubar - uinf
 vbar = vbar - vinf
+else
+call test_filter(utemp)
+call test_filter(vtemp)
+ubar = utemp(1:nx,1:ny)
+vbar = vtemp(1:nx,1:ny)
 endif
 
 ! non-equilibrium PG
@@ -442,8 +454,8 @@ if (velocity_correction_flag) then
 dpdx_fit = dpdxbar1
 dpdy_fit = dpdybar1
 else
-dpdx_fit = dplesdx
-dpdy_fit = dplesdy
+dpdx_fit = dpdx_filt(1:nx,1:ny)
+dpdy_fit = dpdy_filt(1:nx,1:ny)
 endif
 psi_p = (dpdx_fit*cos(theta_d)+dpdy_fit*sin(theta_d))*Deltay**3.0/nu_molec**2.0
 
@@ -541,9 +553,10 @@ end if
 !if (coord==0) then
 !    write(*,*) jt, 'after:',txz(nx/2,ny/2,1)
 !endif
-if (coord==0) then
-    call mts_monitor_pt()
-endif
+!if (coord==0 .and. mod(jt_total,1)==0) then
+!!    call mts_monitor_pt()
+!    call mts_monitor_line()
+!endif
 !if (coord==0) then
 !    call mts_ws_plane
 !    call mts_test_point
@@ -835,6 +848,125 @@ write(fid,*) jt_total,&
 close(fid)
 
 end subroutine mts_monitor_pt
+
+!*******************************************************************************
+subroutine mts_monitor_line
+!*******************************************************************************
+!
+! This subroutine monitors the temporal evolution of mts quantities at a point
+!
+use param, only : jt_total, total_time, path, nx, ny, dt, mts_line_iskip
+use string_util, only : string_splice
+use sim_param, only : u, v
+!use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
+
+implicit none
+
+integer :: fid, i, j
+character*50 :: fname
+
+j = int(ny/2._rprec)
+
+do i = 1,nx,mts_line_iskip
+call string_splice(fname, path // 'output/mts_monitor_line_', i, '.dat')
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+    total_time,&
+    twxbar(i,j),&
+    twybar(i,j),&
+    twxpp(i,j),&
+    twypp(i,j),&
+    twxp(i,j),&
+    twyp(i,j),&
+    twx_eq(i,j),&
+    twy_eq(i,j),&
+    utau(i,j),&
+    utx(i,j),&
+    uty(i,j),&
+    uinst(i,j),&
+    vinst(i,j),&
+    ubar(i,j),&
+    vbar(i,j),&
+    dplesdx(i,j),&
+    dplesdy(i,j),&
+    dpdx_fit(i,j),&
+    dpdy_fit(i,j),&
+    dpdxpp(i,j),&
+    dpdypp(i,j),&
+    Ts(i,j),&
+    Tnu(i,j),&
+    Tdelta(i,j),&
+    redelta(i,j),&
+    psi_p(i,j)
+close(fid)
+enddo
+
+end subroutine mts_monitor_line
+
+!!*******************************************************************************
+!subroutine mts_monitor_line
+!!*******************************************************************************
+!!
+!! This subroutine monitors the temporal evolution of mts quantities at a point
+!!
+!use param, only : jt_total, total_time, path, nx, ny, dt, mts_line_iskip
+!use string_util, only : string_splice
+!use sim_param, only : u, v
+!!use qeqwm, only : utau, utx, uty, ssx, ssy, Ts, Us, vtx, vty
+!
+!implicit none
+!
+!integer :: fid, i, j
+!character*50 :: fname
+!
+!j = int(ny/2._rprec)
+!
+!do i = 1,nx,mts_line_iskip
+!call string_splice(fname, path // 'output/mts_monitor_line_', i, '.dat')
+!open(newunit=fid, file=fname, status='unknown', position='append')
+!write(fid,*) jt_total,&
+!    total_time,&
+!    dt,&
+!    Deltay,&
+!    twxbar(i,j),&
+!    twybar(i,j),&
+!    twxpp(i,j),&
+!    twypp(i,j),&
+!    twxp(i,j),&
+!    twyp(i,j),&
+!    uinst(i,j),&
+!    vinst(i,j),&
+!    ubar(i,j),&
+!    vbar(i,j),&
+!    dplesdx(i,j),&
+!    dplesdy(i,j),&
+!    dpdxbar1(i,j),&
+!    dpdybar1(i,j),&
+!    dpdxbar2(i,j),&
+!    dpdybar2(i,j),&
+!    dpdxpp(i,j),&
+!    dpdypp(i,j),&
+!    ! qeqwm variables
+!    utau(i,j),&
+!    utx(i,j),&
+!    uty(i,j),&
+!    ssx(i,j),&
+!    ssy(i,j),&
+!    Ts(i,j),&
+!    Us(i,j),&
+!    vtx(i,j),&
+!    vty(i,j),&
+!    uinf(i,j),&
+!    vinf(i,j),&
+!    Tdelta(i,j),&
+!    dpdxbar3(i,j),&
+!    dpdybar3(i,j),&
+!    dpdxppdelta(i,j),&
+!    dpdyppdelta(i,j)
+!close(fid)
+!enddo
+!
+!end subroutine mts_monitor_line
 
 !*******************************************************************************
 subroutine mts_monitor_plane

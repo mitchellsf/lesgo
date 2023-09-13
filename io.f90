@@ -548,7 +548,9 @@ use param, only : yplane_calc, yplane_nstart, yplane_nend, yplane_nskip
 use param, only : zplane_calc, zplane_nstart, zplane_nend, zplane_nskip
 use param, only : ws_plane_calc, ws_plane_nstart, ws_plane_nend, ws_plane_nskip
 use param, only : ws_inter_calc, ws_inter_nstart, ws_inter_nend
+use param, only : mts_line_calc, mts_line_nstart, mts_line_nend
 use functions_bl, only : ws_inter
+use mts_wm, only : mts_monitor_line
 implicit none
 
 ! Determine if we are to checkpoint intermediate times
@@ -709,6 +711,22 @@ if(ws_inter_calc .and. coord==0) then
             end if
         end if
         call ws_inter()
+    end if
+end if
+
+!  Determine if recording MTS variables along line in x-direction
+if(mts_line_calc .and. coord==0) then
+    if (jt_total >= mts_line_nstart .and. jt_total <= mts_line_nend) then
+        if (jt_total == mts_line_nstart) then
+            if (coord == 0) then
+                write(*,*) '-------------------------------'
+                write(*,"(1a,i9,1a,i9)")                                       &
+                    'Writing MTS variables on x-line from ',        &
+                    mts_line_nstart, ' to ', mts_line_nend
+                write(*,*) '-------------------------------'
+            end if
+        end if
+        call mts_monitor_line()
     end if
 end if
 
