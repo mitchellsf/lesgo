@@ -164,9 +164,13 @@ call retd_pres_fit(redelta,psi_p,retdu)
 twx_eq = (retdu*nu_molec/Deltay)**2.0*cos(theta_d) + 10._rprec**-10._rprec
 twy_eq = (retdu*nu_molec/Deltay)**2.0*sin(theta_d)
 
-rhsx = utx + dt*(utau*delta_star*(ssx-sxp)/dt_f &
+!rhsx = utx + dt*(utau*delta_star*(ssx-sxp)/dt_f &
+!    + (twx_eq/utau - utx)/Ts)
+!rhsy = uty + dt*(utau*delta_star*(ssy-syp)/dt_f &
+!    + (twy_eq/utau - uty)/Ts)
+rhsx = utx + dt*( &
     + (twx_eq/utau - utx)/Ts)
-rhsy = uty + dt*(utau*delta_star*(ssy-syp)/dt_f &
+rhsy = uty + dt*( &
     + (twy_eq/utau - uty)/Ts)
 
 xf1 = modulo(fringe_region_end-fringe_region_len,1._rprec)*L_x

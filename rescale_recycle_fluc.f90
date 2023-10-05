@@ -164,8 +164,9 @@ subroutine rescale_recycle_fluc_calc
 use param
 use sim_param, only : u, v, w, txz, fxa, fya, fza, fx, fy, fz
 
-integer :: i, i_w, kstart, kend, jx, jy, jz
-real(rprec), dimension(ny,nz_tot) :: dummy1, dummy2, dummy3, force_tscale
+integer :: i, i_w, kstart, kend, jx, jy, jz, kk, k
+real(rprec), dimension(ny,nz_tot) :: dummy1, dummy2, dummy3
+real(rprec) :: force_tscale
 
 !! update fringe weights
 !apply_fringe = fringe_t(fringe_region_end, fringe_region_len)
@@ -276,16 +277,22 @@ enddo
 !    w(i_w,1:ny,1:nz) = apply_fringe%alpha(i) * w(i_w,1:ny,1:nz)&
 !        + apply_fringe%beta(i) * inlt%w%tot(1:ny,kstart:kend+1)
 !end do
-force_tscale = 5._rprec*dt
+
 do i = 1, apply_fringe%nx
+do k = kstart, kend+1
+    kk = k-kstart+1
     i_w = apply_fringe%iwrap(i)
-    fxa(i_w,1:ny,1:nz) = apply_fringe%beta(i)/force_tscale*&
-        (u_fringe(i,1:ny,kstart:kend+1) - u(i_w,1:ny,1:nz))
-    fya(i_w,1:ny,1:nz) = apply_fringe%beta(i)/force_tscale*&
-        (v_fringe(i,1:ny,kstart:kend+1) - v(i_w,1:ny,1:nz))
-    fza(i_w,1:ny,1:nz) = apply_fringe%beta(i)/force_tscale*&
-        (w_fringe(i,1:ny,kstart:kend+1) - w(i_w,1:ny,1:nz))
+!    force_tscale = fringe_force_tscale*fringe_region_len*L_x/inlt%u%avg(k)
+    force_tscale = fringe_force_tscale*fringe_region_len*L_x
+    fxa(i_w,1:ny,kk) = apply_fringe%beta(i)/force_tscale*&
+        (u_fringe(i,1:ny,k) - u(i_w,1:ny,kk))
+    fya(i_w,1:ny,kk) = apply_fringe%beta(i)/force_tscale*&
+        (v_fringe(i,1:ny,k) - v(i_w,1:ny,kk))
+    fza(i_w,1:ny,kk) = apply_fringe%beta(i)/force_tscale*&
+        (w_fringe(i,1:ny,k) - w(i_w,1:ny,kk))
 end do
+end do
+
 !do i = 1, apply_fringe%nx
 !    i_w = apply_fringe%iwrap(i)
 !    u(i_w,1:ny,1:nz) = apply_fringe%alpha(i) * u(i_w,1:ny,1:nz)&

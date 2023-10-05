@@ -33,7 +33,8 @@ real(rprec), dimension(:,:,:), allocatable :: u, v, w,                         &
     RHSx, RHSy, RHSz, RHSx_f, RHSy_f, RHSz_f,                                  &
     dpdx, dpdy, dpdz, txx, txy, tyy,                                           &
     txz, tyz, tzz, divtx, divty, divtz,                                        &
-    fx, fy, fz, fxa, fya, fza
+    fx, fy, fz, fxa, fya, fza, &
+    dudt, dvdt, dwdt, convx, convy, convz
 real(rprec), target, dimension(:,:,:), allocatable :: p
 
 real(rprec), dimension(:,:), allocatable :: ustar_lbc
@@ -80,6 +81,12 @@ allocate ( p(ld, ny, 0:nz) ); p = 0.0_rprec
 allocate ( divtx(ld, ny, lbz:nz) ); divtx = 0.0_rprec
 allocate ( divty(ld, ny, lbz:nz) ); divty = 0.0_rprec
 allocate ( divtz(ld, ny, lbz:nz) ); divtz = 0.0_rprec
+allocate ( dudt(ld, ny, lbz:nz) ); dudt = 0.0_rprec
+allocate ( dvdt(ld, ny, lbz:nz) ); dvdt = 0.0_rprec
+allocate ( dwdt(ld, ny, lbz:nz) ); dwdt = 0.0_rprec
+allocate ( convx(ld, ny, lbz:nz) ); convx = 0.0_rprec
+allocate ( convy(ld, ny, lbz:nz) ); convy = 0.0_rprec
+allocate ( convz(ld, ny, lbz:nz) ); convz = 0.0_rprec
 
 #if defined(PPTURBINES) || defined(PPATM) || defined(PPLVLSET)
 allocate ( fxa(ld, ny, lbz:nz) ); fxa = 0.0_rprec

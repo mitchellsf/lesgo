@@ -212,6 +212,9 @@ real(rprec) :: tavg2_bl = 1._rprec
 real(rprec) :: start_tavg2_bl = 1._rprec
 ! Time when time averaging begins (tavg=tavg+dt)
 real(rprec) :: start_tavg_bl = 1._rprec
+! Fringe force time scale (shouldn't be less than 1)
+! multiplied by dt
+real(rprec) :: fringe_force_tscale = 5._rprec
 
 ! Uniform inflow velocity
 real(rprec) :: inflow_velocity = 1.0_rprec

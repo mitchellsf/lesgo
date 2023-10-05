@@ -489,6 +489,8 @@ do
                 read (buff(equal_pos+1:), *) start_tavg2_bl
             case ('START_TAVG_BL')
                 read (buff(equal_pos+1:), *) start_tavg_bl
+            case ('FRINGE_FORCE_TSCALE')
+                read (buff(equal_pos+1:), *) fringe_force_tscale
             case ('inflow_velocity')
                 read (buff(equal_pos+1:), *) inflow_velocity
             case ('SAMPLING_REGION_END')

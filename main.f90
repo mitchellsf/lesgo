@@ -41,6 +41,7 @@ use forcing
 use functions, only: get_tau_wall_bot, get_tau_wall_top
 use inflow, only: apply_inflow
 use rescale_recycle_fluc, only : apply_fringe
+use io, only : ppe_terms
 #ifdef PPMPI
 use mpi
 use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWN
@@ -158,6 +159,11 @@ time_loop: do jt_step = nstart, nsteps
     RHSy_f = RHSy
     RHSz_f = RHSz
 
+    ! save previous velocity (use dudt as temporary storage for this)
+    dudt = u
+    dvdt = v
+    dwdt = w
+
     ! Calculate velocity derivatives
     ! Calculate dudx, dudy, dvdx, dvdy, dwdx, dwdy (in Fourier space)
     call filt_da(u, dudx, dudy, lbz)
@@ -207,6 +213,9 @@ time_loop: do jt_step = nstart, nsteps
     ! Calculates u x (omega) term in physical space. Uses 3/2 rule for
     ! dealiasing. Stores this term in RHS (right hand side) variable
     call convec()
+    convx = RHSx
+    convy = RHSy
+    convz = RHSz
 
     ! Add div-tau term to RHS variable
     !   this will be used for pressure calculation
@@ -297,6 +306,11 @@ time_loop: do jt_step = nstart, nsteps
             dt * ( tadv1 * RHSz(:,:,nz) + tadv2 * RHSz_f(:,:,nz) )
     end if
 
+    if (mod(jt_total,100)==0) then
+        call ppe_terms()
+    endif
+
+
     ! Set unused values to BOGUS so unintended uses will be noticable
 #ifdef PPSAFETYMODE
 #ifdef PPMPI
@@ -356,6 +370,11 @@ time_loop: do jt_step = nstart, nsteps
     !   uses fx,fy,fz calculated above
     !   for MPI: syncs 1 -> Nz and Nz-1 -> 0 nodes info for u,v,w
     call project ()
+
+    ! compute dudt
+    dudt = (u - dudt)/dt
+    dvdt = (v - dvdt)/dt
+    dwdt = (w - dwdt)/dt
 
     ! Write ke to file
     if (modulo (jt_total, nenergy) == 0) call energy(ke)

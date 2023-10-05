@@ -44,7 +44,7 @@ save
 private
 
 public jt_total, openfiles, energy, output_loop, output_final, output_init,    &
-    write_tau_wall_bot, write_tau_wall_top
+    write_tau_wall_bot, write_tau_wall_top, ppe_terms
 
 ! Where to end with nz index.
 integer :: nz_end
@@ -730,6 +730,10 @@ if(mts_line_calc .and. coord==0) then
     end if
 end if
 
+!if (mod(jt_total,100)==0) then
+!    call inst_write(7)
+!endif
+
 end subroutine output_loop
 
 !*******************************************************************************
@@ -745,6 +749,7 @@ subroutine inst_write(itype)
 !   y-planes : itype=4
 !   z-planes : itype=5
 !   ws plane : itype=6
+!   mom terms : itype=7
 !
 ! For the points and planar data, this subroutine writes using the
 ! locations specfied from the param module.
@@ -765,6 +770,9 @@ use sim_param, only : txz, tyz
 use functions, only : interp_to_w_grid
 use param, only : lbc_mom, ubc_mom
 use wm_param, only : twxbar, twybar, twxpp, twypp, twxp, twyp
+use sim_param, only : dpdx,dpdy,dpdz,divtx,divty,divtz,&
+    dudt,dvdt,dwdt,convx,convy,convz,fxa,fya,fza
+use param, only : mean_p_force_x,mean_p_force_y
 
 use stat_defs, only : xplane, yplane
 #ifdef PPMPI
@@ -1167,6 +1175,47 @@ elseif (itype==6) then
         endif 
     endif
 
+!  Instantaneous write momentum terms for entire domain
+elseif(itype==7) then
+
+    ! terms outputted on RHS of momentum balance
+
+    ! Write x momentum binary Output
+    call string_splice(fname, path //'output/mom_x.', jt_total)
+    call string_concat(fname, bin_ext)
+    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+        access='direct', recl=nx*ny*nz*rprec)
+    write(13,rec=1) -dudt(1:nx,1:ny,1:nz)
+    write(13,rec=2) -convx(1:nx,1:ny,1:nz)
+    write(13,rec=3) -dpdx(1:nx,1:ny,1:nz) + mean_p_force_x
+    write(13,rec=4) -divtx(1:nx,1:ny,1:nz)
+    write(13,rec=5) fxa(1:nx,1:ny,1:nz)
+    close(13)
+    
+    ! Write y momentum binary Output
+    call string_splice(fname, path //'output/mom_y.', jt_total)
+    call string_concat(fname, bin_ext)
+    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+        access='direct', recl=nx*ny*nz*rprec)
+    write(13,rec=1) -dvdt(1:nx,1:ny,1:nz)
+    write(13,rec=2) -convy(1:nx,1:ny,1:nz)
+    write(13,rec=3) -dpdy(1:nx,1:ny,1:nz) + mean_p_force_y
+    write(13,rec=4) -divty(1:nx,1:ny,1:nz)
+    write(13,rec=5) fya(1:nx,1:ny,1:nz)
+    close(13)
+
+    ! Write z momentum binary Output
+    call string_splice(fname, path //'output/mom_z.', jt_total)
+    call string_concat(fname, bin_ext)
+    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+        access='direct', recl=nx*ny*nz*rprec)
+    write(13,rec=1) -dwdt(1:nx,1:ny,1:nz)
+    write(13,rec=2) -convz(1:nx,1:ny,1:nz)
+    write(13,rec=3) -dpdz(1:nx,1:ny,1:nz)
+    write(13,rec=4) -divtz(1:nx,1:ny,1:nz)
+    write(13,rec=5) fza(1:nx,1:ny,1:nz)
+    close(13)
+
 else
     write(*,*) 'Error: itype not specified properly to inst_write!'
     stop
@@ -1521,5 +1570,42 @@ end if
 nullify(x,y,z)
 
 end subroutine output_init
+
+!*******************************************************************************
+subroutine ppe_terms ()
+!*******************************************************************************
+
+use param, only : nx, ny, nz, ld, lbz, jt_total, path, write_endian
+use sim_param, only : u, v, w
+use derivatives, only : ddx, ddy, ddz_w
+
+implicit none
+
+real(rprec), dimension(ld,ny,lbz:nz) :: dusdx, dvsdy, dwsdz, div_us
+character (64) :: fname, bin_ext
+
+call ddx(u,dusdx,lbz)
+call ddy(v,dvsdy,lbz)
+call ddz_w(w,dwsdz,lbz)
+
+div_us = dusdx + dvsdy + dwsdz
+
+! Write x momentum binary Output
+call string_splice(bin_ext, '.c', coord, '.bin')
+call string_splice(fname, path //'output/ppe_terms.', jt_total)
+call string_concat(fname, bin_ext)
+open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+    access='direct', recl=nx*ny*nz*rprec)
+write(13,rec=1) u(1:nx,1:ny,1:nz)
+write(13,rec=2) v(1:nx,1:ny,1:nz)
+write(13,rec=3) w(1:nx,1:ny,1:nz)
+write(13,rec=4) dusdx(1:nx,1:ny,1:nz)
+write(13,rec=5) dvsdy(1:nx,1:ny,1:nz)
+write(13,rec=6) dwsdz(1:nx,1:ny,1:nz)
+write(13,rec=7) div_us(1:nx,1:ny,1:nz)
+close(13)
+
+
+end subroutine ppe_terms
 
 end module io
