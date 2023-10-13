@@ -26,7 +26,8 @@ use fringe
 implicit none
 
 private
-public rescale_recycle_fluc_init, rescale_recycle_fluc_calc, apply_fringe
+public rescale_recycle_fluc_init, rescale_recycle_fluc_calc, apply_fringe,&
+	ustar, vstar, wstar
 
 integer :: isample, iter
 
@@ -52,6 +53,7 @@ real(rprec), dimension(:,:,:), allocatable :: u_fringe,v_fringe,w_fringe
 real(rprec), dimension(:,:), allocatable :: ubar_init, wbar_init
 real(rprec), dimension(:), allocatable :: utau_init
 real(rprec), dimension(:), allocatable :: u_fluc_avg, v_fluc_avg, w_fluc_avg
+real(rprec), dimension(:,:,:), allocatable :: ustar,vstar,wstar
 
 contains
 !*******************************************************************************
@@ -116,6 +118,10 @@ do jz = 1,nz_tot
     w_fringe(:,:,jz) = inlt%w%avg(jz)
 enddo
 v_fringe = 0._rprec
+
+allocate(ustar(apply_fringe%nx,ny,nz_tot)); ustar = 0._rprec
+allocate(vstar(apply_fringe%nx,ny,nz_tot)); vstar = 0._rprec
+allocate(wstar(apply_fringe%nx,ny,nz_tot)); wstar = 0._rprec
 
 allocate(u_fluc_avg(nz_tot)); u_fluc_avg = 0._rprec
 allocate(v_fluc_avg(nz_tot)); v_fluc_avg = 0._rprec
@@ -290,8 +296,19 @@ do k = kstart, kend+1
         (v_fringe(i,1:ny,k) - v(i_w,1:ny,kk))
     fza(i_w,1:ny,kk) = apply_fringe%beta(i)/force_tscale*&
         (w_fringe(i,1:ny,k) - w(i_w,1:ny,kk))
+!    fxa(i_w,1:ny,kk) = 1._rprec/force_tscale*&
+!        (u_fringe(i,1:ny,k) - u(i_w,1:ny,kk))
+!    fya(i_w,1:ny,kk) = 1._rprec/force_tscale*&
+!        (v_fringe(i,1:ny,k) - v(i_w,1:ny,kk))
+!    fza(i_w,1:ny,kk) = 1._rprec/force_tscale*&
+!        (w_fringe(i,1:ny,k) - w(i_w,1:ny,kk))
+!	fya(i_w,1:ny,kk) = 0._rprec
+	ustar(i_w,1:ny,kk) = u(i_w,1:ny,kk) + dt*fxa(i_w,1:ny,kk)
+	vstar(i_w,1:ny,kk) = v(i_w,1:ny,kk) + dt*fya(i_w,1:ny,kk)
+	wstar(i_w,1:ny,kk) = w(i_w,1:ny,kk) + dt*fza(i_w,1:ny,kk)
 end do
 end do
+call compute_fya()
 
 !do i = 1, apply_fringe%nx
 !    i_w = apply_fringe%iwrap(i)
@@ -303,9 +320,9 @@ end do
 !        + apply_fringe%beta(i) * w_fringe(i,1:ny,kstart:kend+1)
 !end do
 
-!if (mod(jt_total,10)==0) then
-!    call write_fringe_force()
-!endif
+if (mod(jt_total,1)==0) then
+    call write_fringe_force()
+endif
 
 if (coord==0 .and. mod(jt_total,1)==0) then
     call write_sample_velocity_average()
@@ -316,6 +333,67 @@ if (coord==0 .and. mod(jt_total,1)==0) then
 endif
 
 end subroutine rescale_recycle_fluc_calc
+
+
+!*******************************************************************************
+subroutine compute_fya()
+!*******************************************************************************
+
+use param, only : nx,ny,nz,ld,lbz,pi,L_y,coord
+use sim_param, only : fxa, fya, fza
+use derivatives, only : ddx, ddz_w
+use emul_complex, only : OPERATOR(.MULI.)
+use fft
+implicit none
+
+real(rprec), dimension(ld,ny,lbz:nz) :: ddx_fx, ddz_fz
+real(rprec), dimension(lh,ny) :: ky2
+real(rprec) :: const
+integer :: jy,jz
+
+! computes spanwise forcing to give zero divergence
+! must be done spectrally to reduce Gibbs oscillations
+
+do jy = 1, ny
+	ky2(:,jy) = real(modulo(jy - 1 + ny/2,ny) - ny/2,kind=rprec)
+enddo
+ky2 = 2._rprec*pi/L_y*ky2
+
+const = 1._rprec / ( nx * ny )
+
+call ddx(fxa,ddx_fx,lbz)
+call ddz_w(fza,ddz_fz,lbz)
+!if (coord==0 .and. jz==nz-1) then
+!	write(*,*) 'fx: ',fxa(:,1,nz-1)
+!	write(*,*) 'fz: ',fza(:,1,nz-1)
+!	write(*,*) 'ddx_fx: ',ddx_fx(:,1,nz-1)
+!	write(*,*) 'ddz_fz: ',ddz_fz(:,1,nz-1)
+!endif
+do jz = lbz, nz
+	fya(:,:,jz) = -const*(ddx_fx(:,:,jz) + ddz_fz(:,:,jz))
+!	if (coord==0 .and. jz==nz-1) then
+!		write(*,*) 'check1: ',fya(:,1,nz-1)
+!	endif
+    call dfftw_execute_dft_r2c(forw, fya(:,:,jz),fya(:,:,jz))
+	!if (coord==0 .and. jz==nz-1) then
+	!	write(*,*) 'check2: ',fya(:,1,nz-1)
+	!endif
+    fya(ld-1:ld,:,jz) = 0._rprec
+    fya(:,ny/2+1,jz) = 0._rprec
+    fya(:,2:ny,jz) = -fya(:,2:ny,jz) .MULI. (1._rprec/ky2(:,2:ny))
+	!if (coord==0 .and. jz==nz-1) then
+	!	write(*,*) 'check3: ',fya(:,1,nz-1)
+	!endif
+    call dfftw_execute_dft_c2r(back, fya(:,:,jz), fya(:,:,jz))
+	!if (coord==0 .and. jz==nz-1) then
+	!	write(*,*) 'check4: ',fya(:,1,nz-1)
+	!endif
+enddo
+if (coord==0) then
+	fya(:,:,nz) = 0._rprec
+endif
+
+end subroutine compute_fya
 
 !*******************************************************************************
 subroutine rescale_fluctuations()
@@ -700,19 +778,43 @@ end subroutine read_sample_velocity_average
 subroutine write_fringe_force()
 !*******************************************************************************
 use param, only : path, coord, jt_total, nx, ny, nz, write_endian
-use sim_param, only : fx,fy,fz
+use sim_param, only : fxa,fya,fza,u,v,w
 use string_util
 
+implicit none
+
+real(rprec), dimension(apply_fringe%nx,ny,nz) :: utemp,vtemp,wtemp,&
+	fxtemp, fytemp,fztemp 
 character (64) :: fname, bin_ext
+integer :: i_w, i, kstart, kend
+
+kstart = coord*(nz-1) + 1
+kend = (coord+1)*(nz-1)
+
+do i = 1, apply_fringe%nx
+    i_w = apply_fringe%iwrap(i)
+    utemp(i,1:ny,1:nz) = u(i_w,1:ny,1:nz)
+    vtemp(i,1:ny,1:nz) = v(i_w,1:ny,1:nz)
+    wtemp(i,1:ny,1:nz) = w(i_w,1:ny,1:nz)
+    fxtemp(i,1:ny,1:nz) = fxa(i_w,1:ny,1:nz)
+    fytemp(i,1:ny,1:nz) = fya(i_w,1:ny,1:nz)
+    fztemp(i,1:ny,1:nz) = fza(i_w,1:ny,1:nz)
+end do
 
 call string_splice(fname, path //'output/force.', jt_total)
 call string_splice(bin_ext, '.c', coord, '.bin')
 call string_concat(fname, bin_ext)
 open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
-    access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) fx(:nx,:ny,1:nz)
-write(13,rec=2) fy(:nx,:ny,1:nz)
-write(13,rec=3) fz(:nx,:ny,1:nz)
+    access='direct', recl=apply_fringe%nx*ny*nz*rprec)
+write(13,rec=1) fxtemp(:,1:ny,1:nz)
+write(13,rec=2) fytemp(:,1:ny,1:nz)
+write(13,rec=3) fztemp(:,1:ny,1:nz)
+write(13,rec=4) utemp(:,1:ny,1:nz)
+write(13,rec=5) vtemp(:,1:ny,1:nz)
+write(13,rec=6) wtemp(:,1:ny,1:nz)
+write(13,rec=7) u_fringe(:,1:ny,kstart:kend+1)
+write(13,rec=8) v_fringe(:,1:ny,kstart:kend+1)
+write(13,rec=9) w_fringe(:,1:ny,kstart:kend+1)
 close(13)
 
 end subroutine write_fringe_force

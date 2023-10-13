@@ -11,7 +11,7 @@ set(CMAKE_Fortran_COMPILER_ID "Intel")
 # Set the name of the computer you are compiling on.
 # Supported computers: rockfish, panoramix, njord, marcc, darwin-brew, cheyenne, stampede
 # Otherwise, default settings are used
-set(hostname "rockfish")
+set(hostname "cheyenne")
 
 # Read and write binary files as big_endian or little_endian
 # Options: DEFAULT, LITTLE, or BIG

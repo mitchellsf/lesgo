@@ -44,7 +44,7 @@ save
 private
 
 public jt_total, openfiles, energy, output_loop, output_final, output_init,    &
-    write_tau_wall_bot, write_tau_wall_top, ppe_terms
+    write_tau_wall_bot, write_tau_wall_top, ppe_terms, mom_terms
 
 ! Where to end with nz index.
 integer :: nz_end
@@ -730,10 +730,6 @@ if(mts_line_calc .and. coord==0) then
     end if
 end if
 
-!if (mod(jt_total,100)==0) then
-!    call inst_write(7)
-!endif
-
 end subroutine output_loop
 
 !*******************************************************************************
@@ -1175,47 +1171,6 @@ elseif (itype==6) then
         endif 
     endif
 
-!  Instantaneous write momentum terms for entire domain
-elseif(itype==7) then
-
-    ! terms outputted on RHS of momentum balance
-
-    ! Write x momentum binary Output
-    call string_splice(fname, path //'output/mom_x.', jt_total)
-    call string_concat(fname, bin_ext)
-    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
-        access='direct', recl=nx*ny*nz*rprec)
-    write(13,rec=1) -dudt(1:nx,1:ny,1:nz)
-    write(13,rec=2) -convx(1:nx,1:ny,1:nz)
-    write(13,rec=3) -dpdx(1:nx,1:ny,1:nz) + mean_p_force_x
-    write(13,rec=4) -divtx(1:nx,1:ny,1:nz)
-    write(13,rec=5) fxa(1:nx,1:ny,1:nz)
-    close(13)
-    
-    ! Write y momentum binary Output
-    call string_splice(fname, path //'output/mom_y.', jt_total)
-    call string_concat(fname, bin_ext)
-    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
-        access='direct', recl=nx*ny*nz*rprec)
-    write(13,rec=1) -dvdt(1:nx,1:ny,1:nz)
-    write(13,rec=2) -convy(1:nx,1:ny,1:nz)
-    write(13,rec=3) -dpdy(1:nx,1:ny,1:nz) + mean_p_force_y
-    write(13,rec=4) -divty(1:nx,1:ny,1:nz)
-    write(13,rec=5) fya(1:nx,1:ny,1:nz)
-    close(13)
-
-    ! Write z momentum binary Output
-    call string_splice(fname, path //'output/mom_z.', jt_total)
-    call string_concat(fname, bin_ext)
-    open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
-        access='direct', recl=nx*ny*nz*rprec)
-    write(13,rec=1) -dwdt(1:nx,1:ny,1:nz)
-    write(13,rec=2) -convz(1:nx,1:ny,1:nz)
-    write(13,rec=3) -dpdz(1:nx,1:ny,1:nz)
-    write(13,rec=4) -divtz(1:nx,1:ny,1:nz)
-    write(13,rec=5) fza(1:nx,1:ny,1:nz)
-    close(13)
-
 else
     write(*,*) 'Error: itype not specified properly to inst_write!'
     stop
@@ -1575,37 +1530,195 @@ end subroutine output_init
 subroutine ppe_terms ()
 !*******************************************************************************
 
-use param, only : nx, ny, nz, ld, lbz, jt_total, path, write_endian
-use sim_param, only : u, v, w
+use param, only : nx, ny, nz, ld, lbz, jt_total, path, write_endian, &
+	dt, tadv1, tadv2
+use sim_param, only : u, v, w, RHSx, RHSy, RHSz, RHSx_f, RHSy_f, RHSz_f,&
+	convx,convy,convz,divtx,divty,divtz,fxa,fya,fza,dpdx,dpdy,dpdz
 use derivatives, only : ddx, ddy, ddz_w
+use mpi_defs, only:mpi_sync_real_array,MPI_SYNC_DOWNUP
 
 implicit none
 
-real(rprec), dimension(ld,ny,lbz:nz) :: dusdx, dvsdy, dwsdz, div_us
+real(rprec), dimension(ld,ny,lbz:nz) :: us,vs, ws, dusdx, dvsdy, dwsdz, div_us
+real(rprec), dimension(ld,ny,lbz:nz) :: ddx_RHSx, ddy_RHSy, ddz_RHSz,&
+	ddx_RHSx_f, ddy_RHSy_f, ddz_RHSz_f,&
+	ddx_convx, ddy_convy, ddz_convz,&
+	ddx_divtx, ddy_divty, ddz_divtz,&
+	ddx_fx, ddy_fy, ddz_fz,&
+	ddx_dpdx, ddy_dpdy, ddz_dpdz
+real(rprec), dimension(ld,ny,lbz:nz) :: div_RHS, div_RHS_f, &
+	div_conv, div_divt, div_f, laplace_p
 character (64) :: fname, bin_ext
+integer :: fid
 
-call ddx(u,dusdx,lbz)
-call ddy(v,dvsdy,lbz)
-call ddz_w(w,dwsdz,lbz)
-
+us = u
+vs = v
+ws = w
+call mpi_sync_real_array(us,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(vs,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ws,lbz,MPI_SYNC_DOWNUP)
+call ddx(us,dusdx,lbz)
+call ddy(vs,dvsdy,lbz)
+call ddz_w(ws,dwsdz,lbz)
 div_us = dusdx + dvsdy + dwsdz
 
-! Write x momentum binary Output
+ddx_RHSx = RHSx
+ddy_RHSy = RHSy
+ddz_RHSz = RHSz
+call mpi_sync_real_array(ddx_RHSx,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_RHSy,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_RHSz,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_RHSx,ddx_RHSx,lbz)
+call ddy(ddy_RHSy,ddy_RHSy,lbz)
+call ddz_w(ddz_RHSz,ddz_RHSz,lbz)
+div_RHS = ddx_RHSx + ddy_RHSy + ddz_RHSz
+
+ddx_RHSx_f = RHSx_f 
+ddy_RHSy_f = RHSy_f 
+ddz_RHSz_f = RHSz_f 
+call mpi_sync_real_array(ddx_RHSx_f,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_RHSy_f,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_RHSz_f,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_RHSx_f,ddx_RHSx_f,lbz)
+call ddy(ddy_RHSy_f,ddy_RHSy_f,lbz)
+call ddz_w(ddz_RHSz_f,ddz_RHSz_f,lbz)
+div_RHS_f = ddx_RHSx_f + ddy_RHSy_f + ddz_RHSz_f
+
+ddx_convx = convx
+ddy_convy = convy
+ddz_convz = convz
+call mpi_sync_real_array(ddx_convx,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_convy,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_convz,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_convx,ddx_convx,lbz)
+call ddy(ddy_convy,ddy_convy,lbz)
+call ddz_w(ddz_convz,ddz_convz,lbz)
+div_conv = ddx_convx + ddy_convy + ddz_convz
+
+ddx_divtx = divtx
+ddy_divty = divty
+ddz_divtz = divtz
+call mpi_sync_real_array(ddx_divtx,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_divty,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_divtz,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_divtx,ddx_divtx,lbz)
+call ddy(ddy_divty,ddy_divty,lbz)
+call ddz_w(ddz_divtz,ddz_divtz,lbz)
+div_divt = ddx_divtx + ddy_divty + ddz_divtz
+
+ddx_fx = fxa
+ddy_fy = fya
+ddz_fz = fza
+call mpi_sync_real_array(ddx_fx,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_fy,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_fz,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_fx,ddx_fx,lbz)
+call ddy(ddy_fy,ddy_fy,lbz)
+call ddz_w(ddz_fz,ddz_fz,lbz)
+div_f = ddx_fx + ddy_fy + ddz_fz
+
+ddx_dpdx = dpdx
+ddy_dpdy = dpdy
+ddz_dpdz = dpdz
+call mpi_sync_real_array(ddx_dpdx,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddy_dpdy,lbz,MPI_SYNC_DOWNUP)
+call mpi_sync_real_array(ddz_dpdz,lbz,MPI_SYNC_DOWNUP)
+call ddx(ddx_dpdx,ddx_dpdx,lbz)
+call ddy(ddy_dpdy,ddy_dpdy,lbz)
+call ddz_w(ddz_dpdz,ddz_dpdz,lbz)
+laplace_p = ddx_dpdx + ddy_dpdy + ddz_dpdz
+
+
 call string_splice(bin_ext, '.c', coord, '.bin')
 call string_splice(fname, path //'output/ppe_terms.', jt_total)
 call string_concat(fname, bin_ext)
 open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
     access='direct', recl=nx*ny*nz*rprec)
-write(13,rec=1) u(1:nx,1:ny,1:nz)
-write(13,rec=2) v(1:nx,1:ny,1:nz)
-write(13,rec=3) w(1:nx,1:ny,1:nz)
-write(13,rec=4) dusdx(1:nx,1:ny,1:nz)
-write(13,rec=5) dvsdy(1:nx,1:ny,1:nz)
-write(13,rec=6) dwsdz(1:nx,1:ny,1:nz)
-write(13,rec=7) div_us(1:nx,1:ny,1:nz)
+write(13,rec=1) us(1:nx,1:ny,1:nz)
+write(13,rec=2) vs(1:nx,1:ny,1:nz)
+write(13,rec=3) ws(1:nx,1:ny,1:nz)
+write(13,rec=4) div_us(1:nx,1:ny,1:nz)
+write(13,rec=5) div_RHS(1:nx,1:ny,1:nz)
+write(13,rec=6) div_RHS_f(1:nx,1:ny,1:nz)
+write(13,rec=7) div_conv(1:nx,1:ny,1:nz)
+write(13,rec=8) div_divt(1:nx,1:ny,1:nz)
+write(13,rec=9) div_f(1:nx,1:ny,1:nz)
+write(13,rec=10) laplace_p(1:nx,1:ny,1:nz)
+write(13,rec=11) dpdx(1:nx,1:ny,1:nz)
+write(13,rec=12) dpdy(1:nx,1:ny,1:nz)
+write(13,rec=13) dpdz(1:nx,1:ny,1:nz)
 close(13)
 
+if (coord==0) then
+fname = path // 'output/ppe_terms.dat'
+open(newunit=fid, file=fname, status='unknown', position='append')
+write(fid,*) jt_total,&
+	dt,&
+	tadv1,&
+	tadv2
+close(fid)
+endif
 
 end subroutine ppe_terms
+
+!*******************************************************************************
+subroutine mom_terms ()
+!*******************************************************************************
+use param, only : nx,ny,nz,jt_total,mean_p_force_x,mean_p_force_y,&
+	write_endian,path
+use sim_param, only : dudt,dvdt,dwdt,convx,convy,convz,dpdx,dpdy,dpdz,&
+	fxa,fya,fza,divtx,divty,divtz,RHSx,RHSy,RHSz,RHSx_f,RHSy_f,RHSz_f
+
+implicit none
+
+character (64) :: fname, bin_ext
+
+call string_splice(bin_ext, '.c', coord, '.bin')
+
+! terms outputted on RHS of momentum balance
+
+! Write x momentum binary Output
+call string_splice(fname, path //'output/mom_x.', jt_total)
+call string_concat(fname, bin_ext)
+open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+    access='direct', recl=nx*ny*nz*rprec)
+write(13,rec=1) -dudt(1:nx,1:ny,1:nz)
+write(13,rec=2) -convx(1:nx,1:ny,1:nz)
+write(13,rec=3) -dpdx(1:nx,1:ny,1:nz) + mean_p_force_x
+write(13,rec=4) -divtx(1:nx,1:ny,1:nz)
+write(13,rec=5) fxa(1:nx,1:ny,1:nz)
+write(13,rec=6) RHSx(1:nx,1:ny,1:nz)
+write(13,rec=7) RHSx_f(1:nx,1:ny,1:nz)
+close(13)
+
+! Write y momentum binary Output
+call string_splice(fname, path //'output/mom_y.', jt_total)
+call string_concat(fname, bin_ext)
+open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+    access='direct', recl=nx*ny*nz*rprec)
+write(13,rec=1) -dvdt(1:nx,1:ny,1:nz)
+write(13,rec=2) -convy(1:nx,1:ny,1:nz)
+write(13,rec=3) -dpdy(1:nx,1:ny,1:nz) + mean_p_force_y
+write(13,rec=4) -divty(1:nx,1:ny,1:nz)
+write(13,rec=5) fya(1:nx,1:ny,1:nz)
+write(13,rec=6) RHSy(1:nx,1:ny,1:nz)
+write(13,rec=7) RHSy_f(1:nx,1:ny,1:nz)
+close(13)
+
+! Write z momentum binary Output
+call string_splice(fname, path //'output/mom_z.', jt_total)
+call string_concat(fname, bin_ext)
+open(unit=13, file=fname, form='unformatted', convert=write_endian,        &
+    access='direct', recl=nx*ny*nz*rprec)
+write(13,rec=1) -dwdt(1:nx,1:ny,1:nz)
+write(13,rec=2) -convz(1:nx,1:ny,1:nz)
+write(13,rec=3) -dpdz(1:nx,1:ny,1:nz)
+write(13,rec=4) -divtz(1:nx,1:ny,1:nz)
+write(13,rec=5) fza(1:nx,1:ny,1:nz)
+write(13,rec=6) RHSz(1:nx,1:ny,1:nz)
+write(13,rec=7) RHSz_f(1:nx,1:ny,1:nz)
+close(13)
+
+end subroutine mom_terms
 
 end module io

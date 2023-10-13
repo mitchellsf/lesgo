@@ -40,8 +40,7 @@ use sgs_stag_util, only : sgs_stag
 use forcing
 use functions, only: get_tau_wall_bot, get_tau_wall_top
 use inflow, only: apply_inflow
-use rescale_recycle_fluc, only : apply_fringe
-use io, only : ppe_terms
+use io, only : ppe_terms, mom_terms
 #ifdef PPMPI
 use mpi
 use mpi_defs, only : mpi_sync_real_array, MPI_SYNC_DOWN
@@ -60,6 +59,10 @@ use turbines, only : turbines_forcing, turbine_vel_init
 use scalars, only : buoyancy_force, scalars_transport, scalars_deriv
 #endif
 
+#ifdef PPBL
+use rescale_recycle_fluc, only : ustar, vstar, wstar, apply_fringe
+#endif
+
 use sponge
 use coriolis, only : coriolis_calc, coriolis_forcing, alpha, G, phi_actual
 use messages
@@ -67,7 +70,7 @@ use messages
 implicit none
 
 character (*), parameter :: prog_name = 'main'
-integer :: nca,jx
+integer :: nca,jx,i_w
 character(:), allocatable :: ca
 
 integer :: jt_step, nstart
@@ -277,6 +280,19 @@ time_loop: do jt_step = nstart, nsteps
     RHSz(:,:,1:nz-1) = RHSz(:,:,1:nz-1) + fza(:,:,1:nz-1)
 !#endif
 
+!#ifdef PPBL
+!	! change RHS_i = f_i in fringe region
+!	do jx = 1, apply_fringe%nx
+!	    i_w = apply_fringe%iwrap(jx)
+!		RHSx(i_w,1:ny,1:nz) = apply_fringe%beta(jx)*fxa(i_w,1:ny,1:nz) &
+!			+ (1._rprec - apply_fringe%beta(jx))*RHSx(i_w,1:ny,1:nz)
+!		RHSy(i_w,1:ny,1:nz) = apply_fringe%beta(jx)*fya(i_w,1:ny,1:nz) &
+!			+ (1._rprec - apply_fringe%beta(jx))*RHSy(i_w,1:ny,1:nz)
+!		RHSz(i_w,1:ny,1:nz) = apply_fringe%beta(jx)*fza(i_w,1:ny,1:nz) &
+!			+ (1._rprec - apply_fringe%beta(jx))*RHSz(i_w,1:ny,1:nz)
+!	end do
+!#endif
+
     !//////////////////////////////////////////////////////
     !/// EULER INTEGRATION CHECK                        ///
     !//////////////////////////////////////////////////////
@@ -306,10 +322,14 @@ time_loop: do jt_step = nstart, nsteps
             dt * ( tadv1 * RHSz(:,:,nz) + tadv2 * RHSz_f(:,:,nz) )
     end if
 
-    if (mod(jt_total,100)==0) then
-        call ppe_terms()
-    endif
-
+!#ifdef PPBL
+!	! change intermediate velocity inside fringe region
+!	do jx = 1, apply_fringe%nx
+!	    i_w = apply_fringe%iwrap(jx)
+!	    u(i_w,1:ny,1:nz) = ustar(jx,1:ny,1:nz)
+!	    w(i_w,1:ny,1:nz) = wstar(jx,1:ny,1:nz)
+!	end do
+!#endif
 
     ! Set unused values to BOGUS so unintended uses will be noticable
 #ifdef PPSAFETYMODE
@@ -331,6 +351,10 @@ time_loop: do jt_step = nstart, nsteps
     !   do not need to store p --> only need gradient
     !   provides p, dpdx, dpdy at 0:nz-1 and dpdz at 1:nz-1
     call press_stag_array()
+
+    if (mod(jt_total,1)==0) then
+        call ppe_terms()
+    endif
 
 !    if (inflow_type==5 .or. inflow_type==6) then
 !!        do jx = 1,apply_fringe%nx
@@ -375,6 +399,10 @@ time_loop: do jt_step = nstart, nsteps
     dudt = (u - dudt)/dt
     dvdt = (v - dvdt)/dt
     dwdt = (w - dwdt)/dt
+
+    if (mod(jt_total,1)==0) then
+        call mom_terms()
+    endif
 
     ! Write ke to file
     if (modulo (jt_total, nenergy) == 0) call energy(ke)

@@ -155,7 +155,7 @@ enddo
 !if (coord==nproc-1) then
 
 ix1 = modulo(floor((1._rprec-2._rprec*fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
-ix2 = modulo(floor((1._rprec-fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
+ix2 = modulo(floor((1._rprec-1._rprec*fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
 !ix1 = modulo(floor((1._rprec-fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
 !ix2 = modulo(floor((1._rprec-0.75_rprec*fringe_region_len)*nx + 1._rprec) - 1, nx) + 1
 if (modulo(ix2-ix1,2)/=0) then
