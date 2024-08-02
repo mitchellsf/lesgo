@@ -21,7 +21,9 @@
 module fringe
 !*******************************************************************************
 use types, only : rprec
+#ifdef PPMPI
 use mpi_defs
+#endif
 use messages
 
 implicit none

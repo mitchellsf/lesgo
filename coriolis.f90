@@ -178,7 +178,9 @@ subroutine coriolis_calc
 use param, only : MPI_RPREC, comm, ierr, dt, total_time_dim, u_star, jt_total
 use sim_param, only : u, v, RHSx, RHSy, nx, ny, nz
 use functions, only : linear_interp
+#ifdef PPMPI
 use mpi
+#endif
 real(rprec) :: ubar = 0, vbar = 0, temp
 
 if (coriolis_forcing == 2) then
